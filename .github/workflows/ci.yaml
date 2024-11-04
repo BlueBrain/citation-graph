@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run the build with tmate debugging enabled"
+        required: false
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest commit
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # fetch all history with version tags
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Set up pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+      - name: Set up environment
+        run: |
+          pip install --upgrade pip wheel setuptools
+          pip install black==24.4.2 flake8==6.0.0 flake8-builtins==2.1.0 flake8-bugbear==22.10.27 flake8-comprehensions==3.10.1 flake8-docstrings==1.6.0 toml-sort==0.23.1 isort==5.12.0 mypy
+      - name: Linting check
+        run: |
+          black --check src/
+          flake8 src/
+          isort --check src/
+          toml-sort --check pyproject.toml
+          mypy src/ --ignore-missing-imports
+  unit-tests:
+    runs-on: ${{ matrix.os }}
+    env:
+      PIP_CACHE_DIR: .cache/pip
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
+    steps:
+      - name: Checkout latest commit
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # fetch all history with version tags
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up pip cache
+        uses: actions/cache@v2
+        with:
+          path: .cache/pip
+          key: ${{ matrix.tox-env }}-${{ matrix.os }}
+      - name: Set up environment
+        run: |
+          pip install --upgrade pip
+          pip install ".[dev]"
+      - name: Running mypy and tests
+        run: |
+          pytest --cov=src --cov-report=html tests

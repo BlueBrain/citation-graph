@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "citations"
+authors = [
+  {name = "Blue Brain Project, EPFL"}
+]
+description = "Tools for analysing Blue Brain citations"
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+dependencies = [
+  "dvc-s3",
+  "httpx",
+  "pandas",
+  "tqdm",
+  "pydantic",
+  "openai",
+  "asyncio",
+  "aiohttp",
+  "python-dotenv",
+  "scikit-learn",
+  "neo4j",
+  "serpapi"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black==24.4.2",
+  "flake8==6.0.0",
+  "flake8-builtins==2.1.0",
+  "flake8-bugbear==22.10.27",
+  "flake8-comprehensions==3.10.1",
+  "flake8-docstrings==1.6.0",
+  "toml-sort==0.23.1",
+  "isort==5.12.0",
+  "pytest==8.2.1",
+  "pytest_httpx",
+  "pytest-cov",
+  "types-PyYAML",
+  "validators",
+  "pandas-stubs",
+  "types-tqdm",
+  "mypy"
+]
+
+[project.scripts]
+gather_articles = "citations.scripts.gather_articles:main"
+gather_authors = "citations.scripts.gather_authors:main"
+
+[tool.black]
+line-length = 79
+preview = true
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=html --cov-config=.coveragerc"
+
+[tool.setuptools.dynamic]
+version = {attr = "citations.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.tomlsort]
+in_place = true
