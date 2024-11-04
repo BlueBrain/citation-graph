@@ -50,12 +50,12 @@ gather_articles = "citations.scripts.gather_articles:main"
 gather_authors = "citations.scripts.gather_authors:main"
 
 [tool.black]
-line-length = 79
+line-length = 120
 preview = true
 
 [tool.isort]
 profile = "black"
-line_length = 79
+line_length = 120
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=html --cov-config=.coveragerc"

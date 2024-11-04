@@ -17,9 +17,7 @@ from httpx import HTTPError, HTTPStatusError, RequestError, Response
 logger = logging.getLogger(__name__)
 
 
-def get_with_waiting(
-    endpoint: str, retry_times: int = 5, wait: float = 30
-) -> Response:
+def get_with_waiting(endpoint: str, retry_times: int = 5, wait: float = 30) -> Response:
     """
     Attempt to send a GET request to the specified endpoint.
 
