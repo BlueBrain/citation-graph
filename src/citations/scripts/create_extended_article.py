@@ -11,11 +11,7 @@ import pydantic_core
 import yaml
 from tqdm import tqdm
 
-from citations.schemas import (
-    ClusterAnalysis,
-    DimensionReductionResult,
-    ExtendedArticle,
-)
+from citations.schemas import ClusterAnalysis, DimensionReductionResult, ExtendedArticle
 
 logging.basicConfig(level=logging.INFO)
 

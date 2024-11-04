@@ -12,11 +12,7 @@ from httpx import HTTPError, HTTPStatusError, RequestError
 from pandas import DataFrame
 from tqdm import tqdm
 
-from citations.data_sources.orcid import (
-    NAMESPACES,
-    get_article_from_endpoint,
-    get_orcidids_from_author_names,
-)
+from citations.data_sources.orcid import NAMESPACES, get_article_from_endpoint, get_orcidids_from_author_names
 from citations.utils import get_with_waiting, load_europmc_xmls
 
 logger = logging.getLogger(__name__)

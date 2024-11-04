@@ -19,11 +19,7 @@ from citations.schemas import (
     Institution,
     OrganizationIdSource,
 )
-from citations.utils import (
-    generate_unique_id,
-    get_with_waiting,
-    normalize_title,
-)
+from citations.utils import generate_unique_id, get_with_waiting, normalize_title
 
 logger = logging.getLogger(__name__)
 

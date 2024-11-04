@@ -6,11 +6,7 @@ from typing import Dict, List
 
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.metrics import (
-    calinski_harabasz_score,
-    davies_bouldin_score,
-    silhouette_score,
-)
+from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
 
 from citations.schemas import ClusterAnalysis
 

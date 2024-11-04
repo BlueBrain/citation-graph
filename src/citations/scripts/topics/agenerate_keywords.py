@@ -14,11 +14,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from neo4j import GraphDatabase
 from pydantic import SecretStr
-from tenacity import (  # for exponential backoff
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)
+from tenacity import retry, stop_after_attempt, wait_random_exponential  # for exponential backoff
 
 from citations.schemas import ClusterAnalysis
 

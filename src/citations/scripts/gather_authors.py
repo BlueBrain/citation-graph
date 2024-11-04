@@ -11,11 +11,7 @@ from xml.etree import ElementTree as ET
 import pandas as pd
 from tqdm import tqdm
 
-from citations.data_sources.orcid import (
-    NAMESPACES,
-    get_author_affiliations,
-    get_author_name,
-)
+from citations.data_sources.orcid import NAMESPACES, get_author_affiliations, get_author_name
 from citations.schemas import Author, AuthorWroteArticle
 
 logger = logging.getLogger(__name__)

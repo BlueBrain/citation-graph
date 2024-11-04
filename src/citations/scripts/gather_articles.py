@@ -9,19 +9,9 @@ from datetime import date
 import pandas as pd
 from tqdm import tqdm
 
-from citations.data_sources.europmc import (
-    extract_authors,
-    extract_bbp_article,
-    fetch_article_element,
-    get_citations,
-)
+from citations.data_sources.europmc import extract_authors, extract_bbp_article, fetch_article_element, get_citations
 from citations.schemas import Article, AuthorWroteArticle
-from citations.utils import (
-    generate_unique_id,
-    is_valid_doi,
-    load_europmc_xmls,
-    to_date,
-)
+from citations.utils import generate_unique_id, is_valid_doi, load_europmc_xmls, to_date
 
 
 def set_article(
