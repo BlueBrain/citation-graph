@@ -21,14 +21,14 @@ def get_with_waiting(
     endpoint: str, retry_times: int = 5, wait: float = 30
 ) -> Response:
     """
-    Attempt to send a GET request to the specified endpoint with retries and waiting period.
+    Attempt to send a GET request to the specified endpoint.
 
     Parameters
     ----------
     endpoint : str
         The URL of the endpoint to send the GET request to.
     retry_times : int | None
-        The number of times to retry the request in case of failure (default is 5).
+        The number of times to retry the request in case of failure.
     wait : float | None
         The waiting period (in seconds) between retries (default is 30).
 
@@ -146,7 +146,7 @@ def load_europmc_xmls(europmc_article_xmls_path: str):
     Parameters
     ----------
     europmc_article_xmls_path : str
-        The path to the directory containing European PubMed Central (Europe PMC) XML files.
+        The path to the directory containing Europe PMC XML files.
 
     Returns
     -------
@@ -170,7 +170,7 @@ def save_xml_map(xml_map: dict, directory: str):
     Parameters
     ----------
     xml_map : dict
-        A dictionary representing the XML map, where the key is the name of the XML file and the value is the root element of the XML tree.
+        A dictionary representing the XML map.
 
     directory : str
         The directory where the XML files will be saved.
