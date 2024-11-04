@@ -19,7 +19,11 @@ from citations.schemas import (
     Institution,
     OrganizationIdSource,
 )
-from citations.utils import generate_unique_id, get_with_waiting, normalize_title
+from citations.utils import (
+    generate_unique_id,
+    get_with_waiting,
+    normalize_title,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +63,9 @@ AFFILIATION_TYPES = [
 ]
 
 
-def extract_affiliation_date(position: Element, date_type: Literal["start-date", "end-date"]) -> date | None:
+def extract_affiliation_date(
+    position: Element, date_type: Literal["start-date", "end-date"]
+) -> date | None:
     """
     Extract a date from the given XML element based on the specified date type.
 
@@ -108,7 +114,9 @@ def extract_affiliation_date(position: Element, date_type: Literal["start-date",
     return dt
 
 
-def fetch_article_orcidids(doi: str | None, pmid: str | None, article_title: str, top_n_orcid: int = 5) -> list[str]:
+def fetch_article_orcidids(
+    doi: str | None, pmid: str | None, article_title: str, top_n_orcid: int = 5
+) -> list[str]:
     """
     Fetch all orcid ids for authors of this article.
 
@@ -129,18 +137,24 @@ def fetch_article_orcidids(doi: str | None, pmid: str | None, article_title: str
     article_orcid_ids = []
     if doi is not None:
         endpoint = f"https://pub.orcid.org/v3.0/search/?q=doi-self:{doi}"
-        article_orcid_ids.extend(get_orcidids_from_endpoint(endpoint)[:top_n_orcid])
+        article_orcid_ids.extend(
+            get_orcidids_from_endpoint(endpoint)[:top_n_orcid]
+        )
 
     if pmid is not None:
         endpoint = f"https://pub.orcid.org/v3.0/search/?q=pmid:{pmid}"
-        article_orcid_ids.extend(get_orcidids_from_endpoint(endpoint)[:top_n_orcid])
+        article_orcid_ids.extend(
+            get_orcidids_from_endpoint(endpoint)[:top_n_orcid]
+        )
 
     article_orcid_ids = list(set(article_orcid_ids))
     article_orcid_ids = filter_orcidids(article_orcid_ids, article_title)
     return list(set(article_orcid_ids))
 
 
-def get_orcidids_from_author_names(author_names: list[str], max_author_names: int = 3) -> list[str]:
+def get_orcidids_from_author_names(
+    author_names: list[str], max_author_names: int = 3
+) -> list[str]:
     """
     Fetch all orcid ids for authors of this article.
 
@@ -187,15 +201,21 @@ def get_orcidids_from_author_names(author_names: list[str], max_author_names: in
                     orcid_ids.append(elements[0].text)
             else:  # multiple potential authors
                 found_exact_name = False
-                logger.warning(f"More than one author found with endpoint {endpoint}")
+                logger.warning(
+                    f"More than one author found with endpoint {endpoint}"
+                )
                 exact_name = f"{given_names} {family_name}"
-                logger.warning(f"Looking for author with exact name {exact_name}")
+                logger.warning(
+                    f"Looking for author with exact name {exact_name}"
+                )
                 orcidids_with_exact_name = []
                 for orcid_id_element in elements:
                     endpoint = f"https://pub.orcid.org/v3.0/{orcid_id_element.text}/record"
                     response = get_with_waiting(endpoint)
 
-                    record = citations.data_sources.utils.parse_xml(response.text)
+                    record = citations.data_sources.utils.parse_xml(
+                        response.text
+                    )
                     if record is None:
                         continue
                     name = get_author_name(record)
@@ -210,7 +230,9 @@ def get_orcidids_from_author_names(author_names: list[str], max_author_names: in
                     try:
                         record = ET.fromstring(response.text)
                     except ET.ParseError as e:
-                        logger.error(f"Error parsing result of call to {endpoint}")
+                        logger.error(
+                            f"Error parsing result of call to {endpoint}"
+                        )
                         logger.error(f"Response text: {response.text}")
                         raise e
 
@@ -225,7 +247,9 @@ def get_orcidids_from_author_names(author_names: list[str], max_author_names: in
                         orcid_ids.append(elements[0].text)
                     if name == exact_name:
                         if orcid_id_element.text is not None:
-                            orcidids_with_exact_name.append(orcid_id_element.text)
+                            orcidids_with_exact_name.append(
+                                orcid_id_element.text
+                            )
                 if len(orcidids_with_exact_name) == 0:
                     logger.warning(f"Cannot find exact name '{exact_name}'.")
                     for i in range(len(elements)):
@@ -234,9 +258,13 @@ def get_orcidids_from_author_names(author_names: list[str], max_author_names: in
                             orcid_ids.append(elements[i].text)  # type: ignore
                 elif len(orcidids_with_exact_name) > 1:
                     logger.warning(
-                        "There is more than one id with exact name '{}'.".format(f"{given_names} {family_name}")
+                        "There is more than one id with exact name '{}'.".format(
+                            f"{given_names} {family_name}"
+                        )
                     )
-                    logger.warning(f"Choosing id: {orcidids_with_exact_name[0]}")
+                    logger.warning(
+                        f"Choosing id: {orcidids_with_exact_name[0]}"
+                    )
                     orcid_ids.append(orcidids_with_exact_name[0])
                 else:
                     orcid_ids.append(orcidids_with_exact_name[0])
@@ -297,7 +325,9 @@ def filter_orcidids(orcid_ids: list[str], article_title: str) -> list[str]:
     normalized_article_title = normalize_title(article_title)
     actual_author_orcidids = []
     for orcidid in orcid_ids:
-        response = get_with_waiting(f"https://pub.orcid.org/v3.0/{orcidid}/record")
+        response = get_with_waiting(
+            f"https://pub.orcid.org/v3.0/{orcidid}/record"
+        )
 
         root = citations.data_sources.utils.parse_xml(response.text)
         if root is None:
@@ -307,7 +337,11 @@ def filter_orcidids(orcid_ids: list[str], article_title: str) -> list[str]:
             "./activities:activities-summary/activities:*/activities:group/*/*/common:title",
             namespaces=NAMESPACES,
         )
-        normalized_titles = {normalize_title(element.text) for element in elements if element.text is not None}
+        normalized_titles = {
+            normalize_title(element.text)
+            for element in elements
+            if element.text is not None
+        }
         if normalized_article_title in normalized_titles:
             actual_author_orcidids.append(orcidid)
     return actual_author_orcidids
@@ -342,7 +376,9 @@ def get_author_orcid_information(
     -------
     None
     """
-    author_wrote_article = AuthorWroteArticle(author_uid=author_uid, article_uid=current_article_uid)
+    author_wrote_article = AuthorWroteArticle(
+        author_uid=author_uid, article_uid=current_article_uid
+    )
     endpoint = f"https://pub.orcid.org/v3.0/{orcidid}/record"
     response = get_with_waiting(endpoint)
 
@@ -380,11 +416,20 @@ def get_author_name(record: Element) -> str | None:
     """
     element = record.find(".//person:name", namespaces=NAMESPACES)
     if element is not None:
-        given_names_element = element.find(".//personal-details:given-names", namespaces=NAMESPACES)
-        family_name_element = element.find(".//personal-details:family-name", namespaces=NAMESPACES)
+        given_names_element = element.find(
+            ".//personal-details:given-names", namespaces=NAMESPACES
+        )
+        family_name_element = element.find(
+            ".//personal-details:family-name", namespaces=NAMESPACES
+        )
         if given_names_element is not None and family_name_element is not None:
-            if given_names_element.text is not None and family_name_element.text is not None:
-                name = given_names_element.text + " " + family_name_element.text
+            if (
+                given_names_element.text is not None
+                and family_name_element.text is not None
+            ):
+                name = (
+                    given_names_element.text + " " + family_name_element.text
+                )
                 return name
     return None
 

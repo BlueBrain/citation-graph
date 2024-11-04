@@ -10,7 +10,9 @@ from citations.utils import normalize_title
 logger = logging.getLogger(__name__)
 
 
-def get_bbp_author_names(bbp_publications: pd.DataFrame, title: str, is_bbp: bool) -> Optional[List[str]]:
+def get_bbp_author_names(
+    bbp_publications: pd.DataFrame, title: str, is_bbp: bool
+) -> Optional[List[str]]:
     """
     Get names of BBP authors for a particular title.
 
@@ -30,8 +32,12 @@ def get_bbp_author_names(bbp_publications: pd.DataFrame, title: str, is_bbp: boo
     """
     try:
         if is_bbp:
-            bbp_row = bbp_publications[bbp_publications["normalized_title"] == normalize_title(title)].iloc[0]
-            author_names = [name.strip() for name in bbp_row["Author"].split(";")]
+            bbp_row = bbp_publications[
+                bbp_publications["normalized_title"] == normalize_title(title)
+            ].iloc[0]
+            author_names = [
+                name.strip() for name in bbp_row["Author"].split(";")
+            ]
         else:
             author_names = None
     except Exception as e:
