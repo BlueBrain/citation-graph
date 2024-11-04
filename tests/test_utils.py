@@ -3,7 +3,11 @@
 import pytest
 from httpx import RequestError
 
-from citations.utils import generate_unique_id, get_with_waiting, normalize_title
+from citations.utils import (
+    generate_unique_id,
+    get_with_waiting,
+    normalize_title,
+)
 
 
 def test_get_with_waiting(httpx_mock):
@@ -35,8 +39,14 @@ def test_generate_unique_id_different_input():
     "input1, input2",
     [
         (
-            ("From Big Data to Big Displays High-Performance Visualization" " at Blue Brain"),
-            ("From Big Data To big Displays High-Performance visualization" " at Blue Brain"),
+            (
+                "From Big Data to Big Displays High-Performance Visualization"
+                " at Blue Brain"
+            ),
+            (
+                "From Big Data To big Displays High-Performance visualization"
+                " at Blue Brain"
+            ),
         ),
         (
             "The Scientific Case for Brain Simulations",

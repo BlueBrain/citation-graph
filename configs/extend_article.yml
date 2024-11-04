@@ -1,0 +1,12 @@
+articles_path: data/articles.csv
+embeddings_path: data/articles_embedded.jsonl
+dimension_reduction:
+  umap: data/umap_results.json
+clusters:
+  agglomerative:
+    - data/clustering/clusters_agglomerative_5.json
+    - data/clustering/clusters_agglomerative_10.json
+    - data/clustering/clusters_agglomerative_15.json
+  kmeans:
+    - data/clustering/clusters_kmeans_50.json
+output_path: data/extended_articles.jsonl

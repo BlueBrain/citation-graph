@@ -74,6 +74,47 @@ class AuthorAffiliatedWithInstitution(BaseModel):
     end_date: date | None
 
 
+# ANALYSIS DATA
+
+
+class ClusterAnalysis(BaseModel):
+    """Cluster analysis schema."""
+
+    model_config = ConfigDict(extra="forbid")
+    algorithm: str
+    parameters: Dict[str, str]
+    clusters: Dict[int, List[str]]  # Cluster ID mapped to List of article UIDs
+    silhouette_score: float | None = None
+    davies_bouldin_score: float | None = None
+    calinski_harabasz_score: float | None = None
+
+
+class EmbeddingMetadata(BaseModel):
+    """Metadata for embeddings."""
+
+    article_uid: str
+    model: str
+
+
+class UMAPParams(BaseModel):
+    """UMAP parameters schema."""
+
+    n_neighbors: int = 15
+    n_components: int = 2
+    metric: str = "euclidean"
+    min_dist: float = 0.1
+    random_state: int = 42
+
+
+class DimensionReductionResult(BaseModel):
+    """Dimension reduction result schema."""
+
+    method: str
+    params: UMAPParams  # TODO: generalize but not urgent
+    article_uids: List[str]
+    reduced_dimensions: List[List[float]]
+
+
 class ExtendedArticle(Article):
     """Article with analysis data schema."""
 
