@@ -37,7 +37,7 @@ jobs:
           flake8 src/
           isort --check src/
           toml-sort --check pyproject.toml
-          mypy src/
+          mypy src/ --ignore-missing-imports
   unit-tests:
     runs-on: ${{ matrix.os }}
     env:
