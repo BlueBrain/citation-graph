@@ -17,9 +17,7 @@ from citations.schemas import Article
 from citations.utils import to_date
 
 
-def generate_citation_response_xml(
-    article_ids: list[str], source: str, hit_count: int
-) -> str:
+def generate_citation_response_xml(article_ids: list[str], source: str, hit_count: int) -> str:
     """
     Generate an XML string for a given list of IDs.
 
@@ -85,15 +83,11 @@ def generate_single_result_xml(
     if author_list:
         authors = ET.SubElement(result, "authorIdList")
         for orcid_id in author_list:
-            ET.SubElement(
-                authors, "authorId", attrib={"type": "ORCID"}
-            ).text = orcid_id
+            ET.SubElement(authors, "authorId", attrib={"type": "ORCID"}).text = orcid_id
     return result
 
 
-def generate_article_search_results_xml(
-    article_ids, sources, pmids, dois, titles, isbns
-):
+def generate_article_search_results_xml(article_ids, sources, pmids, dois, titles, isbns):
     response_wrapper = ET.Element(
         "responseWrapper",
         {
@@ -134,9 +128,7 @@ def test_fetch_citation_ids():
         "citations.data_sources.europmc.get_with_waiting",
         side_effect=[response1, response2, response3],
     ):
-        citation_ids = fetch_citation_ids(
-            "example_id", "example_source", page_size=2
-        )
+        citation_ids = fetch_citation_ids("example_id", "example_source", page_size=2)
 
     assert citation_ids == ["1", "2", "3", "4", "5", "6"]
 
@@ -217,9 +209,7 @@ def test_fetch_article_element_doi():
     isbn = "isbn1"
     response = httpx.Response(
         status_code=200,
-        text=generate_article_search_results_xml(
-            [article_id], [source], [pmid], [doi1], [title], [isbn]
-        ),
+        text=generate_article_search_results_xml([article_id], [source], [pmid], [doi1], [title], [isbn]),
     )
     with patch(
         "citations.data_sources.europmc.get_with_waiting",
@@ -249,17 +239,13 @@ def test_fetch_article_element_isbns():
     )
     response3 = httpx.Response(
         status_code=200,
-        text=generate_article_search_results_xml(
-            [article_id], [source], [pmid], [doi1], [title], [isbn]
-        ),
+        text=generate_article_search_results_xml([article_id], [source], [pmid], [doi1], [title], [isbn]),
     )
     with patch(
         "citations.data_sources.europmc.get_with_waiting",
         side_effect=[response1, response2, response3],
     ):
-        article_element = fetch_article_element(
-            "bad doi", "isbn1 isbn2", title
-        )
+        article_element = fetch_article_element("bad doi", "isbn1 isbn2", title)
         assert article_element.find("./id").text == article_id
         assert article_element.find("./source").text == source
         assert article_element.find("./pmid").text == pmid
@@ -276,9 +262,7 @@ def test_fetch_article_element_title():
     isbn = "isbn1"
     response = httpx.Response(
         status_code=200,
-        text=generate_article_search_results_xml(
-            [article_id], [source], [pmid], [doi1], [title], [isbn]
-        ),
+        text=generate_article_search_results_xml([article_id], [source], [pmid], [doi1], [title], [isbn]),
     )
     with patch(
         "citations.data_sources.europmc.get_with_waiting",
@@ -312,9 +296,7 @@ def test_extract_bbp_article():
     isbn = "isbn1"
     pub_date = "2020-01-01"
 
-    result = generate_single_result_xml(
-        article_id, "europmc", pmid, doi1, title, isbn, pub_date
-    )
+    result = generate_single_result_xml(article_id, "europmc", pmid, doi1, title, isbn, pub_date)
     article, _, _ = extract_bbp_article(result, title, isbns=isbn)
     assert article.uid == article_id
     assert article.pmid == pmid
@@ -383,9 +365,7 @@ def generate_get_article_response_xml(
 def test_get_article(doi, title, abstract, urls, pmid, europmc_id, date):
     response = httpx.Response(
         status_code=200,
-        text=generate_get_article_response_xml(
-            doi, title, abstract, urls, pmid, europmc_id, date
-        ),
+        text=generate_get_article_response_xml(doi, title, abstract, urls, pmid, europmc_id, date),
     )
     with patch(
         "citations.data_sources.europmc.get_with_waiting",
@@ -406,9 +386,7 @@ def test_get_article(doi, title, abstract, urls, pmid, europmc_id, date):
 
 
 def test_get_article_no_article():
-    response = httpx.Response(
-        status_code=200, text=generate_get_article_response_xml()
-    )
+    response = httpx.Response(status_code=200, text=generate_get_article_response_xml())
     with patch(
         "citations.data_sources.europmc.get_with_waiting",
         return_value=response,
@@ -449,9 +427,7 @@ def test_get_citations(citation_ids, articles):
         "citations.data_sources.europmc.fetch_citation_ids",
         return_value=citation_ids,
     ):
-        with patch(
-            "citations.data_sources.europmc.get_article", side_effect=articles
-        ):
+        with patch("citations.data_sources.europmc.get_article", side_effect=articles):
             citations, citing_articles = get_citations("uid3", "MED")
 
             for citation, citing_article in zip(citations, citing_articles):

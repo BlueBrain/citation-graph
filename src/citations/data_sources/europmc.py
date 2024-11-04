@@ -64,9 +64,7 @@ def get_citations(
     return citations, citing_articles
 
 
-def get_article(
-    europmc_id: str, europmc_xml_map: dict | None = None
-) -> Article | None:
+def get_article(europmc_id: str, europmc_xml_map: dict | None = None) -> Article | None:
     r"""Process a citation by fetching its metadata from Euro PMC.
 
     \f
@@ -80,8 +78,7 @@ def get_article(
     Article
     """
     response = get_with_waiting(
-        "https://www.ebi.ac.uk/europepmc/webservices"
-        f"/rest/search?query=EXT_ID:{europmc_id}&resultType=core"
+        "https://www.ebi.ac.uk/europepmc/webservices" f"/rest/search?query=EXT_ID:{europmc_id}&resultType=core"
     )
     root = parse_xml(response.text)
     if root is None:
@@ -186,10 +183,7 @@ def extract_bbp_article(
     europmc_id = europmc_id_elem.text  # type: ignore
     if publication_date is None:
         publication_date_elem = element.find("./firstPublicationDate")
-        if (
-            publication_date_elem is not None
-            and publication_date_elem.text is not None
-        ):
+        if publication_date_elem is not None and publication_date_elem.text is not None:
             publication_date = to_date(publication_date_elem.text)
     europmc_source_elem = element.find("./source")  # type: ignore
     europmc_source = europmc_source_elem.text  # type: ignore
@@ -245,16 +239,10 @@ def extract_authors(element: Element) -> list[str]:
     """
     # Maybe later we might want to add other author id types.
     elements = element.findall("./authorIdList/authorId[@type='ORCID']")
-    return [
-        orcid_id.text
-        for orcid_id in elements
-        if orcid_id is not None and orcid_id.text is not None
-    ]
+    return [orcid_id.text for orcid_id in elements if orcid_id is not None and orcid_id.text is not None]
 
 
-def fetch_citation_ids(
-    europmc_id: str, europmc_source: str, page_size: int = 1000
-) -> list[str] | None:
+def fetch_citation_ids(europmc_id: str, europmc_source: str, page_size: int = 1000) -> list[str] | None:
     r"""Fetch citation IDs for a given article from Europe PMC.
 
     \f
@@ -273,8 +261,7 @@ def fetch_citation_ids(
         A list of citation IDs associated with the given article.
     """
     response = get_with_waiting(
-        f"https://www.ebi.ac.uk/europepmc/webservices/rest/{
-            europmc_source}/{europmc_id}"
+        f"https://www.ebi.ac.uk/europepmc/webservices/rest/{europmc_source}/{europmc_id}"
         f"/citations?page=1&pageSize={page_size}&format=xml"
     )
     root = parse_xml(response.text)
@@ -285,35 +272,21 @@ def fetch_citation_ids(
     if num_citations == 0:
         return []
     pages = math.ceil(num_citations / page_size)
-    citation_ids = [
-        result.text for result in root.findall("./citationList/citation/id")
-    ]
+    citation_ids = [result.text for result in root.findall("./citationList/citation/id")]
     for page in range(2, pages + 1):
         response = get_with_waiting(
-            f"https://www.ebi.ac.uk/europepmc/webservices/rest/{
-                europmc_source}/{europmc_id}"
+            f"https://www.ebi.ac.uk/europepmc/webservices/rest/{europmc_source}/{europmc_id}"
             f"/citations?page={page}&pageSize={page_size}&format=xml"
         )
         root = parse_xml(response.text)
         if root is None:
             continue
-        citation_ids.extend(
-            [
-                result.text
-                for result in root.findall("./citationList/citation/id")
-            ]
-        )
-    citation_ids = [
-        citation_id
-        for citation_id in citation_ids
-        if citation_id != europmc_id
-    ]
+        citation_ids.extend([result.text for result in root.findall("./citationList/citation/id")])
+    citation_ids = [citation_id for citation_id in citation_ids if citation_id != europmc_id]
     return citation_ids  # type: ignore
 
 
-def fetch_article_element(
-    doi: str, isbns: str | None, title: str
-) -> Element | None:
+def fetch_article_element(doi: str, isbns: str | None, title: str) -> Element | None:
     """
     Retrieve the XML element of an article by its DOI, isbn or title.
 
@@ -334,8 +307,7 @@ def fetch_article_element(
     normalized_title = normalize_title(title)
     if doi is not None:
         response = get_with_waiting(
-            "https://www.ebi.ac.uk/europepmc/webservices/rest/"
-            f"search?query=DOI:{doi}&resultType=core"
+            "https://www.ebi.ac.uk/europepmc/webservices/rest/" f"search?query=DOI:{doi}&resultType=core"
         )
         root = parse_xml(response.text)
         if root is not None:
@@ -349,24 +321,20 @@ def fetch_article_element(
     if isbns is not None:
         for isbn in isbns.split():
             response = get_with_waiting(
-                "https://www.ebi.ac.uk/europepmc/webservices/rest/"
-                f"search?query=ISBN:{isbn}&resultType=core"
+                "https://www.ebi.ac.uk/europepmc/webservices/rest/" f"search?query=ISBN:{isbn}&resultType=core"
             )
             root = parse_xml(response.text)
             if root is not None:
                 article_element = root.find("./resultList/result")
                 if article_element is not None:
                     result_title = article_element.find("./title").text  # type: ignore
-                    if (
-                        normalize_title(str(result_title)) == normalized_title
-                    ):  # type: ignore
+                    if normalize_title(str(result_title)) == normalized_title:  # type: ignore
                         return article_element
 
     # When using a title in a query we need to replace spaces
     query_title = quote(title)
     response = get_with_waiting(
-        "https://www.ebi.ac.uk/europepmc/webservices"
-        f"/rest/search?query={query_title}&resultType=core"
+        "https://www.ebi.ac.uk/europepmc/webservices" f"/rest/search?query={query_title}&resultType=core"
     )
     root = parse_xml(response.text)
     if root is None:

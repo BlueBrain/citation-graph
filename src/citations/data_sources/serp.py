@@ -71,7 +71,5 @@ def get_all_bbp_publications(
     bbp_wip_theses = pd.read_csv(bbp_theses_wip_path)
     bbp_wip_theses["is_published"] = False
     bbp_publications = pd.concat([bbp_publications, bbp_wip_theses])
-    bbp_publications["normalized_title"] = bbp_publications["Title"].apply(
-        lambda title: normalize_title(title)
-    )
+    bbp_publications["normalized_title"] = bbp_publications["Title"].apply(lambda title: normalize_title(title))
     return bbp_publications

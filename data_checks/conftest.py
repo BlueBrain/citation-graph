@@ -10,9 +10,7 @@ import pytest
 @pytest.fixture(scope="session")
 def articles():
     """Return articles data."""
-    return pd.read_csv(
-        os.path.join("data", "articles.csv"), dtype={"pmid": str}
-    )
+    return pd.read_csv(os.path.join("data", "articles.csv"), dtype={"pmid": str})
 
 
 @pytest.fixture(scope="session")
@@ -42,18 +40,14 @@ def author_wrote_article():
 @pytest.fixture(scope="session")
 def author_affiliated_with_institution():
     """Return affiliation data."""
-    return pd.read_csv(
-        os.path.join("data", "author_affiliated_with_institution.csv")
-    )
+    return pd.read_csv(os.path.join("data", "author_affiliated_with_institution.csv"))
 
 
 @pytest.fixture(scope="session")
 def embedded_article_uids():
     """Return embedding uids."""
     uids = []
-    with open(
-        os.path.join("data", "articles_embedded.jsonl"), "r", encoding="utf-8"
-    ) as articles_file:
+    with open(os.path.join("data", "articles_embedded.jsonl"), "r", encoding="utf-8") as articles_file:
         for line in articles_file:
             embedded_article = json.loads(line)
             uids.append(embedded_article["article_uid"])

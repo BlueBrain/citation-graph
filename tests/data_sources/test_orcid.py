@@ -14,9 +14,7 @@ from citations.data_sources.orcid import (
 )
 
 
-def generate_affiliation_xml(
-    organization, start_date, end_date, pos_type="education"
-):
+def generate_affiliation_xml(organization, start_date, end_date, pos_type="education"):
     xml_string = f"""
     <{pos_type}:{pos_type}-summary xmlns:{pos_type}="http://www.orcid.org/ns/{pos_type}"
         xmlns:common="http://www.orcid.org/ns/common">
@@ -50,9 +48,7 @@ def test_extract_affiliation_date(date_type):
     organization = "org1"
     start_date = date(2020, 1, 1)
     end_date = date(2021, 1, 1)
-    element = generate_affiliation_xml(
-        organization, start_date, end_date, pos_type="education"
-    )
+    element = generate_affiliation_xml(organization, start_date, end_date, pos_type="education")
 
     if date_type == "start-date":
         expected_dt = start_date
@@ -63,9 +59,7 @@ def test_extract_affiliation_date(date_type):
     dt = extract_affiliation_date(element, date_type)
     assert dt == expected_dt
 
-    element = generate_affiliation_xml(
-        organization, start_date, end_date, pos_type="work"
-    )
+    element = generate_affiliation_xml(organization, start_date, end_date, pos_type="work")
 
     if date_type == "start-date":
         expected_dt = start_date
@@ -92,9 +86,7 @@ def generate_orcid_list(orcid_ids: list[str]):
     return ET.tostring(response_wrapper, encoding="unicode")
 
 
-def generate_author_record(
-    titles: list[str], article_organizations=None, element=False
-):
+def generate_author_record(titles: list[str], article_organizations=None, element=False):
     response_wrapper = ET.Element(
         "record:record",
         {
@@ -104,9 +96,7 @@ def generate_author_record(
             "xmlns:common": NAMESPACES["common"],
         },
     )
-    activities = ET.SubElement(
-        response_wrapper, "activities:activities-summary"
-    )
+    activities = ET.SubElement(response_wrapper, "activities:activities-summary")
     works = ET.SubElement(activities, "activities:works")
     group = ET.SubElement(works, "activities:group")
     for i, title in enumerate(titles):
@@ -121,12 +111,8 @@ def generate_author_record(
             organization = ET.SubElement(work_summary, "common:organization")
             ET.SubElement(organization, "common:name").text = org_name
             dis_org = ET.SubElement(organization, "disambiguated-organization")
-            ET.SubElement(
-                dis_org, "common:disambiguated-organization"
-            ).text = org_id
-            ET.SubElement(
-                dis_org, "common:disambiguated-organization-identifier"
-            ).text = org_source
+            ET.SubElement(dis_org, "common:disambiguated-organization").text = org_id
+            ET.SubElement(dis_org, "common:disambiguated-organization-identifier").text = org_source
 
     if element:
         return response_wrapper
@@ -141,15 +127,11 @@ def test_filter_orcidids():
     good_orcid_id = "orcid2"
     response1 = httpx.Response(
         status_code=200,
-        text=generate_author_record(
-            ["From Big Data to Big Displays", "A Physically Plausible Model"]
-        ),
+        text=generate_author_record(["From Big Data to Big Displays", "A Physically Plausible Model"]),
     )
     response2 = httpx.Response(
         status_code=200,
-        text=generate_author_record(
-            ["In Silico Brain Imaging", "Large Volume Imaging of Rodent Brain"]
-        ),
+        text=generate_author_record(["In Silico Brain Imaging", "Large Volume Imaging of Rodent Brain"]),
     )
     with patch(
         "citations.data_sources.orcid.get_with_waiting",
@@ -162,9 +144,7 @@ def test_filter_orcidids():
 
 def test_fetch_article_authors_doi():
     orcid_ids = ["orcid1", "orcid2"]
-    response = httpx.Response(
-        status_code=200, text=generate_orcid_list(orcid_ids)
-    )
+    response = httpx.Response(status_code=200, text=generate_orcid_list(orcid_ids))
     with patch(
         "citations.data_sources.orcid.get_with_waiting",
         return_value=response,
@@ -180,9 +160,7 @@ def test_fetch_article_authors_doi():
 def test_fetch_article_authors_pmid():
     orcid_ids = ["orcid1", "orcid2"]
     response1 = httpx.Response(status_code=400, text="")
-    response2 = httpx.Response(
-        status_code=200, text=generate_orcid_list(orcid_ids)
-    )
+    response2 = httpx.Response(status_code=200, text=generate_orcid_list(orcid_ids))
     with patch(
         "citations.data_sources.orcid.get_with_waiting",
         side_effect=[response1, response2],
@@ -204,9 +182,7 @@ def test_get_author_affiliation():
         {"name": "org1_name", "id": "org1_id", "source": "ROR"},
         {"name": "org2_name", "id": "org2_id", "source": "GRID"},
     ]
-    record = generate_author_record(
-        titles, expected_institutions, element=True
-    )
+    record = generate_author_record(titles, expected_institutions, element=True)
     from citations.data_sources.orcid import get_author_affiliations
 
     institutions, affiliations = get_author_affiliations(orcidid, record)
