@@ -1,5 +1,13 @@
 # Citation graph
 
+[Installing the package](#installing-the-package)
+[Gathering articles with citation data from EuroPMC](#gathering-articles-with-citation-data-from-europmc)
+[Gathering author with affiliation data from Orcid](#gathering-author-with-affiliation-data-from-orcid)
+[Creating database in Neo4J](#creating-database-in-neo4j)
+[Creating main perspectives in Neo4J and Bloom](#creating-main-perspectives-in-neo4j-and-bloom)
+[## Creating other perspectives in Neo4J and Bloom](#creating-other-perspectives-in-neo4j-and-bloom)
+[Funding and Acknowledgement](#funding-and-acknowledgement)
+
 ## Installing the package
 
 ```bash
@@ -454,8 +462,6 @@ This means that we only consider the 'newest' Institution of each Author.
 Why is it important:
 Shows people who cited BBP articles and so might be potential customers.
 
-
-[Funding and Acknowledgement](#funding-and-acknowledgement)
 
 ## Funding and Acknowledgement
 
