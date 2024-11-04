@@ -24,9 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--articles_path",
         type=pathlib.Path,
@@ -37,26 +35,19 @@ def get_parser() -> argparse.ArgumentParser:
         "--bbp_articles_path",
         type=pathlib.Path,
         default=(
-            "data/publication_data/bbp_publications/BBP official list of"
-            " publications and theses 11jul2024.csv"
+            "data/publication_data/bbp_publications/BBP official list of" " publications and theses 11jul2024.csv"
         ),
     )
     parser.add_argument(
         "--orcid_article_records_dir",
         type=pathlib.Path,
-        help=(
-            "Directory where we save all article records which lists article"
-            " authors."
-        ),
+        help=("Directory where we save all article records which lists article" " authors."),
         default="data/publication_data/article_authors/orcid",
     )
     parser.add_argument(
         "--orcid_author_records_dir",
         type=pathlib.Path,
-        help=(
-            "Directory where we save all author records searched by orcid id"
-            " and author name."
-        ),
+        help=("Directory where we save all author records searched by orcid id" " and author name."),
         default="data/publication_data/author_profiles/orcid",
     )
     parser.add_argument(
@@ -68,9 +59,7 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def fetch_authors_by_europmc_record(
-    europmc_article_xmls_path: str, orcid_author_records_dir: str
-):
+def fetch_authors_by_europmc_record(europmc_article_xmls_path: str, orcid_author_records_dir: str):
     """
     Extract orcidids from europmc records and fetch authors.
 
@@ -94,9 +83,7 @@ def fetch_authors_by_europmc_record(
             )
         ]
         for orcidid in orcidids:
-            author_path = os.path.join(
-                orcid_author_records_dir, f"{orcidid}.xml"
-            )
+            author_path = os.path.join(orcid_author_records_dir, f"{orcidid}.xml")
             if os.path.exists(author_path):
                 continue
             endpoint = f"https://pub.orcid.org/v3.0/{orcidid}/record"
@@ -142,12 +129,8 @@ def main(
 
     """
     articles = pd.read_csv(articles_path)
-    fetch_article_records(
-        articles, orcid_article_records_dir
-    )  # use DOI/PMID in ORCID API to get WROTE edges
-    fetch_authors_by_orcidid(
-        orcid_article_records_dir, orcid_author_records_dir
-    )  # author nodes
+    fetch_article_records(articles, orcid_article_records_dir)  # use DOI/PMID in ORCID API to get WROTE edges
+    fetch_authors_by_orcidid(orcid_article_records_dir, orcid_author_records_dir)  # author nodes
     fetch_authors_by_author_name(
         articles_path, bbp_articles_path, orcid_author_records_dir
     )  # WROTE edge from name without orcid id but still from europmc
@@ -156,9 +139,7 @@ def main(
     )  # WROTE edges from orcid id obtained from europmc
 
 
-def fetch_authors_by_author_name(
-    articles_path: str, bbp_articles_path: str, orcid_author_records_dir: str
-) -> None:
+def fetch_authors_by_author_name(articles_path: str, bbp_articles_path: str, orcid_author_records_dir: str) -> None:
     """
     Fetch authors for a BBP article using author names.
 
@@ -185,9 +166,7 @@ def fetch_authors_by_author_name(
     """
     articles = pd.read_csv(articles_path)
     bbp_publications = pd.read_csv(bbp_articles_path)
-    bbp_publications = bbp_publications[
-        bbp_publications["Title"].isin(articles["title"])
-    ]
+    bbp_publications = bbp_publications[bbp_publications["Title"].isin(articles["title"])]
     for _, bbp_row in tqdm(bbp_publications.iterrows()):
         uid = articles[articles["title"] == bbp_row["Title"]]["uid"].iloc[0]
         path = os.path.join(orcid_author_records_dir, f"{uid}.xml")
@@ -215,9 +194,7 @@ def fetch_authors_by_author_name(
         tree.write(path)
 
 
-def fetch_authors_by_orcidid(
-    orcid_article_records_dir: str, orcid_author_records_dir: str
-):
+def fetch_authors_by_orcidid(orcid_article_records_dir: str, orcid_author_records_dir: str):
     """
     Fetch authors for a BBP article using orcidid.
 
@@ -247,9 +224,7 @@ def fetch_authors_by_orcidid(
         )
         orcidids = [path.text for path in elements if path.text is not None]
         for orcidid in orcidids:
-            author_path = os.path.join(
-                orcid_author_records_dir, f"{orcidid}.xml"
-            )
+            author_path = os.path.join(orcid_author_records_dir, f"{orcidid}.xml")
             if os.path.exists(author_path):
                 continue
             endpoint = f"https://pub.orcid.org/v3.0/{orcidid}/record"
@@ -265,9 +240,7 @@ def fetch_authors_by_orcidid(
                 f.write(response.text)
 
 
-def fetch_article_records(
-    articles: DataFrame, orcid_article_records_dir: str
-) -> None:
+def fetch_article_records(articles: DataFrame, orcid_article_records_dir: str) -> None:
     """
     Fetch xml records showing the authors of each article based on searching on Orcid.
 
@@ -293,9 +266,7 @@ def fetch_article_records(
 
         fetched = False
         if doi is not None:
-            article_text = get_article_from_endpoint(
-                f"https://pub.orcid.org/v3.0/search/?q=doi-self:{doi}"
-            )
+            article_text = get_article_from_endpoint(f"https://pub.orcid.org/v3.0/search/?q=doi-self:{doi}")
             if article_text is not None:
                 with open(article_path, "w") as f:
                     f.write(article_text)
@@ -303,9 +274,7 @@ def fetch_article_records(
 
         pmid = row.pmid if not pd.isna(row.pmid) else None
         if not fetched and pmid is not None:
-            article_text = get_article_from_endpoint(
-                f"https://pub.orcid.org/v3.0/search/?q=pmid:{pmid}"
-            )
+            article_text = get_article_from_endpoint(f"https://pub.orcid.org/v3.0/search/?q=pmid:{pmid}")
             if article_text is None:
                 continue
             with open(article_path, "w") as f:

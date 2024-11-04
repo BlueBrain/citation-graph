@@ -5,9 +5,7 @@ from typing import Dict, List, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-OrganizationIdSource = Literal[
-    "LEI", "FUNDREF", "GRID", "RINGGOLD", "ROR", "sha256"
-]
+OrganizationIdSource = Literal["LEI", "FUNDREF", "GRID", "RINGGOLD", "ROR", "sha256"]
 
 
 class Article(BaseModel):

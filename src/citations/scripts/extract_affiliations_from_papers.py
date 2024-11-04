@@ -68,9 +68,7 @@ The document:
 logger = logging.getLogger(__name__)
 
 
-def main(
-    openai_api_key: str, raw_path: str, dedup_path: str, reparse_pdfs: bool
-):
+def main(openai_api_key: str, raw_path: str, dedup_path: str, reparse_pdfs: bool):
     """
     Collect all article pdfs and extract authors with affiliated departments.
 
@@ -196,9 +194,7 @@ def deduplicate_entities(df: pd.DataFrame, column: str) -> pd.DataFrame:
         dep_prefix = np.zeros((len(entities), len(entities)))
         for i in tqdm(range(len(entities)), desc="Calculating prefixes"):
             for j in range(len(entities)):
-                dep_prefix[i, j] = (
-                    entities[i] in entities[j] or entities[j] in entities[i]
-                )
+                dep_prefix[i, j] = entities[i] in entities[j] or entities[j] in entities[i]
         alias_mtx = np.logical_or(jwm_mtx, dep_prefix)
     else:
         alias_mtx = jwm_mtx
@@ -268,9 +264,7 @@ def parse_pdfs(pdfs_path: str, client: OpenAI) -> pd.DataFrame:
             messages=[
                 {
                     "role": "user",
-                    "content": CORRECTION_TEMPLATE.format(
-                        lines="\n".join(bad_lines[i : i + lines_per_iter])
-                    ),
+                    "content": CORRECTION_TEMPLATE.format(lines="\n".join(bad_lines[i : i + lines_per_iter])),
                 }
             ],
             model="gpt-3.5-turbo",
@@ -288,16 +282,12 @@ def parse_pdfs(pdfs_path: str, client: OpenAI) -> pd.DataFrame:
     authors = drop_missing(authors)
     authors.sort_values(by=["author name", "department"], inplace=True)
     authors.reset_index(inplace=True, drop=True)
-    return authors[
-        ["author name", "department", "institution", "city", "country"]
-    ]
+    return authors[["author name", "department", "institution", "city", "country"]]
 
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "pdfs_path",
         type=pathlib.Path,
@@ -318,6 +308,4 @@ if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
 
-    main(
-        args.openai_api_key, args.raw_path, args.dedup_path, args.reparse_pdfs
-    )
+    main(args.openai_api_key, args.raw_path, args.dedup_path, args.reparse_pdfs)

@@ -26,9 +26,7 @@ from rapidfuzz import fuzz, process
 from citations.schemas import Article, ArticleCitesArticle, AuthorWroteArticle
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def read_jsonl(file_path: str) -> List[Dict[str, Any]]:
@@ -60,9 +58,7 @@ def get_last_name(name: str) -> str:
     return parts[-1] if parts else ""
 
 
-def process_authors(
-    data: List[Dict[str, Any]], existing_db: pd.DataFrame
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def process_authors(data: List[Dict[str, Any]], existing_db: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Process authors from SERP data and merge with existing database.
 
     Args:
@@ -78,33 +74,21 @@ def process_authors(
     for item in data:
         for citation in item.get("citations", []):
             for author in citation.get("authors", []):
-                authors.add(
-                    (author.get("author_id", ""), author.get("name", ""))
-                )
+                authors.add((author.get("author_id", ""), author.get("name", "")))
 
     authors_df = pd.DataFrame(authors, columns=["google_scholar_id", "name"])
     logging.info(f"Total new authors: {len(authors_df)}")
     logging.info(f"Total existing authors: {len(existing_db)}")
 
     # Normalize author names
-    authors_df["normalized_name"] = authors_df["name"].apply(
-        normalize_author_name
-    )
-    existing_db["normalized_name"] = existing_db["name"].apply(
-        normalize_author_name
-    )
+    authors_df["normalized_name"] = authors_df["name"].apply(normalize_author_name)
+    existing_db["normalized_name"] = existing_db["name"].apply(normalize_author_name)
 
     # Create additional columns for blocking
     authors_df["initials"] = authors_df["normalized_name"].apply(get_initials)
-    authors_df["last_name"] = authors_df["normalized_name"].apply(
-        get_last_name
-    )
-    existing_db["initials"] = existing_db["normalized_name"].apply(
-        get_initials
-    )
-    existing_db["last_name"] = existing_db["normalized_name"].apply(
-        get_last_name
-    )
+    authors_df["last_name"] = authors_df["normalized_name"].apply(get_last_name)
+    existing_db["initials"] = existing_db["normalized_name"].apply(get_initials)
+    existing_db["last_name"] = existing_db["normalized_name"].apply(get_last_name)
 
     # Create a set to keep track of matched existing authors
     matched_existing_authors = set()
@@ -115,8 +99,7 @@ def process_authors(
     for _, new_author in authors_df.iterrows():
         # Filter existing_db based on initials and last name
         potential_matches = existing_db[
-            (existing_db["initials"] == new_author["initials"])
-            | (existing_db["last_name"] == new_author["last_name"])
+            (existing_db["initials"] == new_author["initials"]) | (existing_db["last_name"] == new_author["last_name"])
         ]
 
         matched = False
@@ -136,14 +119,12 @@ def process_authors(
                     "uid": existing_author["uid"],
                     "orcid_id": existing_author["orcid_id"],
                     "name": existing_author["name"],
-                    "google_scholar_id": new_author["google_scholar_id"]
-                    or existing_author.get("google_scholar_id"),
+                    "google_scholar_id": new_author["google_scholar_id"] or existing_author.get("google_scholar_id"),
                 }
                 merged_rows.append(merged_row)
                 matched_existing_authors.add(existing_author["uid"])
                 logging.debug(
-                    f"Matched author: {new_author['name']} with"
-                    f" {existing_author['name']} (score: {match_score})"
+                    f"Matched author: {new_author['name']} with" f" {existing_author['name']} (score: {match_score})"
                 )
                 matched = True
                 match_count += 1
@@ -169,9 +150,7 @@ def process_authors(
                     "uid": existing_author["uid"],
                     "orcid_id": existing_author["orcid_id"],
                     "name": existing_author["name"],
-                    "google_scholar_id": existing_author.get(
-                        "google_scholar_id"
-                    ),
+                    "google_scholar_id": existing_author.get("google_scholar_id"),
                 }
             )
             unmatched_existing += 1
@@ -191,9 +170,7 @@ def process_authors(
     return merged_df, new_entries
 
 
-def process_articles(
-    data: List[Dict[str, Any]], existing_db: pd.DataFrame
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def process_articles(data: List[Dict[str, Any]], existing_db: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Process articles from SERP data and merge with existing database.
 
@@ -252,15 +229,11 @@ def process_articles(
             processed_google_scholar_ids.add(citation.get("result_id", ""))
 
     articles_df = pd.DataFrame([article.dict() for article in articles])
-    articles_df["normalized_title"] = articles_df["title"].apply(
-        normalize_title
-    )
+    articles_df["normalized_title"] = articles_df["title"].apply(normalize_title)
     # drop duplicates based on normalized title
     articles_df = articles_df.drop_duplicates(subset="normalized_title")
 
-    existing_db["normalized_title"] = existing_db["title"].apply(
-        normalize_title
-    )
+    existing_db["normalized_title"] = existing_db["title"].apply(normalize_title)
 
     # Merge dataframes without adding suffixes to uid and google_scholar_id
     merged_df = pd.merge(
@@ -276,9 +249,7 @@ def process_articles(
 
     for index, row in merged_df.iterrows():
         # Combine sources
-        if pd.notna(row.get("source_serp")) and pd.notna(
-            row.get("source_existing")
-        ):
+        if pd.notna(row.get("source_serp")) and pd.notna(row.get("source_existing")):
             merged_df.at[index, "source"] = f"serp_{row['source_existing']}"
         elif pd.notna(row.get("source_serp")):
             merged_df.at[index, "source"] = row["source_serp"]
@@ -289,27 +260,16 @@ def process_articles(
         if pd.notna(row.get("title_existing")):
             merged_df.at[index, "title"] = row["title_existing"].strip()
         elif pd.notna(row.get("title_serp")):
-            processed_title = (
-                row["title_serp"]
-                .strip()
-                .lower()
-                .replace('"', "")
-                .replace("'", "")
-                .strip()
-            )
+            processed_title = row["title_serp"].strip().lower().replace('"', "").replace("'", "").strip()
             merged_df.at[index, "title"] = processed_title
         else:
             logging.error(f"Title is missing for article {row.get('uid')}")
 
         # Get max of available citation count information
-        if pd.notna(row.get("citations_existing")) and pd.notna(
-            row.get("citations_serp")
-        ):
+        if pd.notna(row.get("citations_existing")) and pd.notna(row.get("citations_serp")):
             num_multiple_citation_count += 1
             # find the max citation count
-            merged_df.at[index, "citations"] = max(
-                row["citations_existing"], row["citations_serp"]
-            )
+            merged_df.at[index, "citations"] = max(row["citations_existing"], row["citations_serp"])
         elif pd.notna(row.get("citations_serp")):
             merged_df.at[index, "citations"] = row["citations_serp"]
         elif pd.notna(row.get("citations_existing")):
@@ -346,13 +306,9 @@ def process_articles(
                 logging.error(f"Error in fetching {field}: {str(e)}")
 
     logging.info(
-        f"{num_multiple_citation_count} articles had citation information from"
-        " multiple sources. Took the max value."
+        f"{num_multiple_citation_count} articles had citation information from" " multiple sources. Took the max value."
     )
-    logging.info(
-        f"{num_no_citation_count} articles had no citation information. (value"
-        " set to 0)"
-    )
+    logging.info(f"{num_no_citation_count} articles had no citation information. (value" " set to 0)")
 
     # Remove temporary columns and normalize the DataFrame
     columns_to_keep = list(Article.model_fields.keys())
@@ -363,10 +319,7 @@ def process_articles(
     final_df = merged_df[columns_to_keep]
 
     # Identify new entries
-    new_entries = final_df[
-        final_df["uid"].isin(articles_df["uid"])
-        & ~final_df["uid"].isin(existing_db["uid"])
-    ]
+    new_entries = final_df[final_df["uid"].isin(articles_df["uid"]) & ~final_df["uid"].isin(existing_db["uid"])]
 
     # Remove normalized_title from final dataframes
     final_df = final_df.drop(columns=["normalized_title"])
@@ -405,9 +358,7 @@ def process_author_wrote_article(
         if "authors" in item:
             for author in item["authors"]:
                 awa = AuthorWroteArticle(
-                    author_uid=author.get(
-                        "author_id", "error_in_cited_author_google_id"
-                    ),
+                    author_uid=author.get("author_id", "error_in_cited_author_google_id"),
                     article_uid=article_id,
                 )
                 author_wrote_article.append(awa)
@@ -417,9 +368,7 @@ def process_author_wrote_article(
             citation_id = citation.get("result_id", "")
             for author in citation.get("authors", []):
                 awa = AuthorWroteArticle(
-                    author_uid=author.get(
-                        "author_id", "error_in_citing_author_google_id"
-                    ),
+                    author_uid=author.get("author_id", "error_in_citing_author_google_id"),
                     article_uid=citation_id,
                 )
                 author_wrote_article.append(awa)
@@ -436,18 +385,12 @@ def process_author_wrote_article(
     )
 
     # Identify new entries
-    new_entries = merged_df[merged_df["_merge"] == "left_only"].drop(
-        columns=["_merge"]
-    )
+    new_entries = merged_df[merged_df["_merge"] == "left_only"].drop(columns=["_merge"])
     # Prepare final DataFrame
     final_df = merged_df.drop(columns=["_merge"])
 
-    final_df = final_df.drop_duplicates(
-        subset=["author_uid", "article_uid"], keep="first"
-    )
-    new_entries = new_entries.drop_duplicates(
-        subset=["author_uid", "article_uid"], keep="first"
-    )
+    final_df = final_df.drop_duplicates(subset=["author_uid", "article_uid"], keep="first")
+    new_entries = new_entries.drop_duplicates(subset=["author_uid", "article_uid"], keep="first")
 
     logging.info(f"Total author_wrote_article entries: {len(final_df)}")
     logging.info(f"New author_wrote_article entries: {len(new_entries)}")
@@ -490,19 +433,13 @@ def process_article_cites_article(
     )
 
     # Identify new entries
-    new_entries = merged_df[merged_df["_merge"] == "left_only"].drop(
-        columns=["_merge"]
-    )
+    new_entries = merged_df[merged_df["_merge"] == "left_only"].drop(columns=["_merge"])
 
     # Prepare final DataFrame
     final_df = merged_df.drop(columns=["_merge"])
-    final_df = final_df.drop_duplicates(
-        subset=["article_uid_source", "article_uid_target"], keep="first"
-    )
+    final_df = final_df.drop_duplicates(subset=["article_uid_source", "article_uid_target"], keep="first")
 
-    new_entries = new_entries.drop_duplicates(
-        subset=["article_uid_source", "article_uid_target"], keep="first"
-    )
+    new_entries = new_entries.drop_duplicates(subset=["article_uid_source", "article_uid_target"], keep="first")
 
     logging.info(f"Total article_cites_article entries: {len(final_df)}")
     logging.info(f"New article_cites_article entries: {len(new_entries)}")
@@ -519,75 +456,45 @@ def main(input_file: str, output_dir: str, data_dir: str) -> None:
     suffix = "_before_serp"
     existing_articles_dir = Path(data_dir) / f"articles{suffix}.csv"
     existing_authors_dir = Path(data_dir) / f"authors{suffix}.csv"
-    existing_author_wrote_article_dir = (
-        Path(data_dir) / f"author_wrote_article{suffix}.csv"
-    )
-    existing_article_cites_article_dir = (
-        Path(data_dir) / f"article_cites_article{suffix}.csv"
-    )
+    existing_author_wrote_article_dir = Path(data_dir) / f"author_wrote_article{suffix}.csv"
+    existing_article_cites_article_dir = Path(data_dir) / f"article_cites_article{suffix}.csv"
 
     # Load existing database
     existing_articles = pd.read_csv(existing_articles_dir)
     existing_authors = pd.read_csv(existing_authors_dir)
-    existing_author_wrote_article = pd.read_csv(
-        existing_author_wrote_article_dir, index_col=0
-    )
-    existing_article_cites_article = pd.read_csv(
-        existing_article_cites_article_dir
-    )
+    existing_author_wrote_article = pd.read_csv(existing_author_wrote_article_dir, index_col=0)
+    existing_article_cites_article = pd.read_csv(existing_article_cites_article_dir)
 
     # Process and write articles_serp.csv
-    articles, serp_article_additions = process_articles(
-        data, existing_articles
-    )
+    articles, serp_article_additions = process_articles(data, existing_articles)
     # breakpoint()
     articles.to_csv(output_path / "articles.csv", index=False)
-    serp_article_additions.to_csv(
-        output_path / "serp_article_additions.csv", index=False
-    )
+    serp_article_additions.to_csv(output_path / "serp_article_additions.csv", index=False)
 
     # Process and write authors_serp.csv
     authors, serp_author_additions = process_authors(data, existing_authors)
     authors.to_csv(output_path / "authors.csv", index=False)
-    serp_author_additions.to_csv(
-        output_path / "serp_author_additions.csv", index=False
-    )
+    serp_author_additions.to_csv(output_path / "serp_author_additions.csv", index=False)
 
     # breakpoint()
     # Process and write author_wrote_article_serp.csv
-    author_wrote_article, serp_author_wrote_article_additions = (
-        process_author_wrote_article(
-            data, existing_author_wrote_article, authors
-        )
+    author_wrote_article, serp_author_wrote_article_additions = process_author_wrote_article(
+        data, existing_author_wrote_article, authors
     )
     # breakpoint()
-    author_wrote_article.to_csv(
-        output_path / "author_wrote_article.csv", index=False
-    )
-    serp_author_wrote_article_additions.to_csv(
-        output_path / "serp_author_wrote_article_additions.csv", index=False
-    )
+    author_wrote_article.to_csv(output_path / "author_wrote_article.csv", index=False)
+    serp_author_wrote_article_additions.to_csv(output_path / "serp_author_wrote_article_additions.csv", index=False)
 
     # Process and write article_cites_article_serp.csv
-    article_cites_article, serp_article_cites_article_additions = (
-        process_article_cites_article(data, existing_article_cites_article)
+    article_cites_article, serp_article_cites_article_additions = process_article_cites_article(
+        data, existing_article_cites_article
     )
-    article_cites_article.to_csv(
-        output_path / "article_cites_article.csv", index=False
-    )
-    serp_article_cites_article_additions.to_csv(
-        output_path / "serp_article_cites_article_additions.csv", index=False
-    )
+    article_cites_article.to_csv(output_path / "article_cites_article.csv", index=False)
+    serp_article_cites_article_additions.to_csv(output_path / "serp_article_cites_article_additions.csv", index=False)
 
-    print(
-        "\nSummary\n\nTotal number of articles:"
-        f" {len(articles)} ({len(serp_article_additions)} new)"
-    )
+    print("\nSummary\n\nTotal number of articles:" f" {len(articles)} ({len(serp_article_additions)} new)")
     # print(f"Number of new articles from SERP api: {len(serp_article_additions)}")
-    print(
-        "Total number of authors:"
-        f" {len(authors)} ({len(serp_author_additions)} new)"
-    )
+    print("Total number of authors:" f" {len(authors)} ({len(serp_author_additions)} new)")
     # print(f"Number of new authors from SERP api: {len(serp_author_additions)}")
     print(
         "Total number of author_wrote_article:"
@@ -609,10 +516,7 @@ def main(input_file: str, output_dir: str, data_dir: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=(
-            "Process SERP API data from JSONL to CSV files and merge with"
-            " existing database."
-        )
+        description=("Process SERP API data from JSONL to CSV files and merge with" " existing database.")
     )
     parser.add_argument(
         "--input",

@@ -29,9 +29,7 @@ logging.basicConfig(
 api_request_logger = logging.getLogger("api_requests")
 api_request_logger.setLevel(logging.INFO)
 # Create a file handler for the API request logger
-handler = logging.FileHandler(
-    "data/serp/api_requests.log"
-)  # Specify the log file name
+handler = logging.FileHandler("data/serp/api_requests.log")  # Specify the log file name
 # Create a formatter and add it to the handler
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
@@ -121,24 +119,17 @@ class AsyncSerpApiCitationChecker:
     async def check_rate_limit(self):
         """Check the rate limit status and updates self.rate_limit_reached."""
         params = {"api_key": self.api_key}
-        async with self.session.get(
-            self.account_url, params=params
-        ) as response:
+        async with self.session.get(self.account_url, params=params) as response:
             if response.status == 200:
                 data = await response.json()
                 self.rate_limit_reached = (
-                    data["this_hour_searches"] >= self.max_requests_per_hour
-                    or data["total_searches_left"] <= 0
+                    data["this_hour_searches"] >= self.max_requests_per_hour or data["total_searches_left"] <= 0
                 )
                 if self.rate_limit_reached:
                     logging.warning(f"Rate limit reached. Details: {data}")
             else:
-                logging.error(
-                    f"Error checking rate limit: Status {response.status}"
-                )
-                self.rate_limit_reached = (
-                    True  # Assume rate limit reached on error
-                )
+                logging.error(f"Error checking rate limit: Status {response.status}")
+                self.rate_limit_reached = True  # Assume rate limit reached on error
 
     async def make_api_request(self, params: Dict) -> Dict:
         """
@@ -171,9 +162,7 @@ class AsyncSerpApiCitationChecker:
             response.raise_for_status()
 
             # Log the request and response
-            api_request_logger.info(
-                f"Request: {self.base_url}, Params: {params}"
-            )
+            api_request_logger.info(f"Request: {self.base_url}, Params: {params}")
 
             return await response.json()
 
@@ -227,13 +216,8 @@ class AsyncSerpApiCitationChecker:
             try:
                 data = await self.make_api_request(params)
             except Exception as e:
-                logging.error(
-                    "Error fetching article ID for"
-                    f" {field_name} '{field_value}': {str(e)}"
-                )
-                await self.save_exception(
-                    "get_article_id", None, field_value, str(e)
-                )
+                logging.error("Error fetching article ID for" f" {field_name} '{field_value}': {str(e)}")
+                await self.save_exception("get_article_id", None, field_value, str(e))
                 if self.rate_limit_reached:
                     raise
                 continue
@@ -252,30 +236,18 @@ class AsyncSerpApiCitationChecker:
 
                 if field_name == "title" and result_title == input_title:
                     # Fetch authors
-                    authors = result.get("publication_info", {}).get(
-                        "authors", []
-                    )
+                    authors = result.get("publication_info", {}).get("authors", [])
                     return result["result_id"], authors
-                elif (
-                    field_name in ["doi", "pmid", "url", "isbns"]
-                    and input_title == result_title
-                ):
+                elif field_name in ["doi", "pmid", "url", "isbns"] and input_title == result_title:
                     # Fetch authors
-                    authors = result.get("publication_info", {}).get(
-                        "authors", []
-                    )
+                    authors = result.get("publication_info", {}).get("authors", [])
                     return result["result_id"], authors
                 else:
-                    logging.warning(
-                        "Article ID not found for any field names for title:"
-                        f" {input_title}"
-                    )
+                    logging.warning("Article ID not found for any field names for title:" f" {input_title}")
                     logging.debug(result)
                     is_same_title = input_title == result_title
                     if not is_same_title:
-                        logging.warning(
-                            f"Title mismatch: {input_title} vs {result_title}"
-                        )
+                        logging.warning(f"Title mismatch: {input_title} vs {result_title}")
 
         logging.warning(f"No article ID found for title: {title}")
         await self.save_exception(
@@ -308,9 +280,7 @@ class AsyncSerpApiCitationChecker:
         start = 0
 
         # Load existing citations for this article, if any
-        citations_file = os.path.join(
-            self.output_dir, f"citations_{article_id}.json"
-        )
+        citations_file = os.path.join(self.output_dir, f"citations_{article_id}.json")
         if os.path.exists(citations_file):
             async with aiofiles.open(citations_file, "r") as f:
                 data = json.loads(await f.read())
@@ -334,15 +304,12 @@ class AsyncSerpApiCitationChecker:
                     "hl": "en",
                 }
                 data = await self.make_api_request(params)
-                total_citations = int(
-                    data["search_information"]["total_results"]
-                )
+                total_citations = int(data["search_information"]["total_results"])
 
             # If there are many citations, log this information
             if total_citations > 100:
                 logging.info(
-                    f"Article '{title}' (ID: {article_id}) has"
-                    f" {total_citations} citations. This may take a while."
+                    f"Article '{title}' (ID: {article_id}) has" f" {total_citations} citations. This may take a while."
                 )
 
             with tqdm(
@@ -365,9 +332,7 @@ class AsyncSerpApiCitationChecker:
                     data = await self.make_api_request(params)
 
                     if total_citations == 0:
-                        total_citations = int(
-                            data["search_information"]["total_results"]
-                        )
+                        total_citations = int(data["search_information"]["total_results"])
 
                     citations = data.get("organic_results", [])
 
@@ -406,11 +371,7 @@ class AsyncSerpApiCitationChecker:
                         all_citations.append(citation_info)
 
                         # Log missing fields
-                        missing_fields = [
-                            field
-                            for field, value in citation_info.items()
-                            if value is None
-                        ]
+                        missing_fields = [field for field, value in citation_info.items() if value is None]
                         if missing_fields:
                             await self.save_exception(
                                 "get_citations",
@@ -433,13 +394,8 @@ class AsyncSerpApiCitationChecker:
                         )
 
         except Exception as e:
-            logging.error(
-                f"Error fetching citations for article ID '{article_id}'"
-                f" (Title: '{title}'): {str(e)}"
-            )
-            await self.save_exception(
-                "get_citations", None, article_id, str(e)
-            )
+            logging.error(f"Error fetching citations for article ID '{article_id}'" f" (Title: '{title}'): {str(e)}")
+            await self.save_exception("get_citations", None, article_id, str(e))
             if self.rate_limit_reached:
                 # Save citations to file only if rate limit is reached
                 async with aiofiles.open(citations_file, "w") as f:
@@ -503,14 +459,10 @@ class AsyncSerpApiCitationChecker:
             "reason": reason,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
         }
-        async with aiofiles.open(
-            os.path.join(self.output_dir, "serp_api_exceptions.json"), "a"
-        ) as f:
+        async with aiofiles.open(os.path.join(self.output_dir, "serp_api_exceptions.json"), "a") as f:
             await f.write(json.dumps(exception) + "\n")
 
-    async def process_row(
-        self, row: Dict, fetch_citations: bool = False
-    ) -> Dict | None:
+    async def process_row(self, row: Dict, fetch_citations: bool = False) -> Dict | None:
         """
         Process a single row of data.
 
@@ -541,24 +493,16 @@ class AsyncSerpApiCitationChecker:
                 }
 
                 if fetch_citations:
-                    citations = await self.get_citations(
-                        article_id, row["title"]
-                    )
+                    citations = await self.get_citations(article_id, row["title"])
                     result["total_citations"] = citations["total_citations"]
                     result["citations"] = citations["citations"]
 
                 # If the source is 'serp_csv' and there were no authors before, update the row
-                if (
-                    row.get("source") == "serp_csv"
-                    and not row.get("authors")
-                    and authors
-                ):
+                if row.get("source") == "serp_csv" and not row.get("authors") and authors:
                     row["authors"] = authors
                 return result
             else:
-                logging.warning(
-                    f"No article ID found for title: {row['title']}"
-                )
+                logging.warning(f"No article ID found for title: {row['title']}")
                 await self.save_exception(
                     "get_article_id",
                     None,
@@ -587,9 +531,7 @@ class AsyncSerpApiCitationChecker:
             from the existing results file.
         """
         num_results = 0
-        output_file = os.path.join(
-            self.output_dir, "serp_citation_results.jsonl"
-        )
+        output_file = os.path.join(self.output_dir, "serp_citation_results.jsonl")
         logging.info(f"\n\nStarting Processing articles from {self.csv_file}")
 
         # Load existing data
@@ -603,9 +545,7 @@ class AsyncSerpApiCitationChecker:
                     except json.JSONDecodeError:
                         logging.error(f"Error loading JSON from line: {line}")
                         continue
-        logging.info(
-            f"Loaded {len(existing_data)} existing articles from {output_file}"
-        )
+        logging.info(f"Loaded {len(existing_data)} existing articles from {output_file}")
 
         # Count and filter articles to be processed in a single pass
         articles_to_process = []  # Store rows to process, not just the count
@@ -621,42 +561,30 @@ class AsyncSerpApiCitationChecker:
                     articles_to_process.append(row)
                 else:
                     logging.info(
-                        f"Skipping article '{row['title']}' as it is already"
-                        " processed or doesn't meet criteria."
+                        f"Skipping article '{row['title']}' as it is already" " processed or doesn't meet criteria."
                     )
 
         # Now process the filtered articles
         async with aiohttp.ClientSession() as self.session:
-            with tqdm(
-                total=len(articles_to_process), desc="Processing articles"
-            ) as pbar:
+            with tqdm(total=len(articles_to_process), desc="Processing articles") as pbar:
                 for row in articles_to_process:
                     try:
-                        row_result = await self.process_row(
-                            row, fetch_citations=True
-                        )
+                        row_result = await self.process_row(row, fetch_citations=True)
                         if row_result:
                             num_results += 1
                             async with aiofiles.open(output_file, "a") as f:
                                 await f.write(json.dumps(row_result) + "\n")
                     except Exception as e:
                         if self.rate_limit_reached:
-                            logging.warning(
-                                "Rate limit reached. Stopping processing."
-                            )
+                            logging.warning("Rate limit reached. Stopping processing.")
                             break
                         else:
-                            logging.error(
-                                "Error processing row for title"
-                                f" '{row['title']}': {str(e)}"
-                            )
+                            logging.error("Error processing row for title" f" '{row['title']}': {str(e)}")
                     # Update progress bar only if article was processed
                     pbar.update(1)
 
                     if self.rate_limit_reached:
-                        logging.warning(
-                            "Rate limit reached. Stopping processing."
-                        )
+                        logging.warning("Rate limit reached. Stopping processing.")
                         break
 
         logging.info(f"Results saved to {output_file}")
@@ -684,12 +612,8 @@ def get_parser():
         The directory where the output JSONL file will be saved.
         Defaults to 'output'.
     """
-    parser = argparse.ArgumentParser(
-        description="Fetch citations for BBP articles."
-    )
-    parser.add_argument(
-        "articles_csv", type=str, help="Path to the input CSV file."
-    )
+    parser = argparse.ArgumentParser(description="Fetch citations for BBP articles.")
+    parser.add_argument("articles_csv", type=str, help="Path to the input CSV file.")
     parser.add_argument(
         "--output_dir",
         type=str,
@@ -731,10 +655,7 @@ async def main():
 
     logging.info(f"Processed {num_results} articles for citations.")
     logging.info(f"Number of SERP_API requests made: {checker.requests_made}")
-    logging.info(
-        "Exceptions saved to"
-        f" {os.path.join(output_dir, 'serp_api_exceptions.json')}"
-    )
+    logging.info("Exceptions saved to" f" {os.path.join(output_dir, 'serp_api_exceptions.json')}")
 
 
 if __name__ == "__main__":

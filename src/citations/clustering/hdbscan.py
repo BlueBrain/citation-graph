@@ -39,10 +39,7 @@ def run_hdbscan_clustering(
     """
     clustering_model = HDBSCAN(**kwargs)
 
-    logging.info(
-        "Running HDBSCAN clustering with params"
-        f" {clustering_model.get_params()}..."
-    )
+    logging.info("Running HDBSCAN clustering with params" f" {clustering_model.get_params()}...")
     st_time = time.time()
     # check if embeddings has duplicate keys
     embedding_array = np.array(list(embeddings.values()))
@@ -50,36 +47,22 @@ def run_hdbscan_clustering(
     logging.info(f"Clustering took {time.time() - st_time:.2f} seconds.")
 
     logging.info("Calculating evaluation metrics...")
-    labels = np.array(
-        [
-            i
-            for i in range(len(set(cluster_labels)))
-            if len(set(cluster_labels)) > 1
-        ]
-    )
+    labels = np.array([i for i in range(len(set(cluster_labels))) if len(set(cluster_labels)) > 1])
     logging.info(f"Number of clusters: {len(labels)}")
 
     if len(labels) > 1:
-        silhouette_score_ = silhouette_score(
-            list(embeddings.values()), cluster_labels, metric="cosine"
-        )
+        silhouette_score_ = silhouette_score(list(embeddings.values()), cluster_labels, metric="cosine")
         logging.info(f"Silhouette score: {silhouette_score_}")
         logging.info(f"Number of clusters: {len(labels)}")
-        logging.info(
-            f"Number of noise points: {len(set(cluster_labels)) - len(labels)}"
-        )
+        logging.info(f"Number of noise points: {len(set(cluster_labels)) - len(labels)}")
         logging.info(f"Number of articles: {len(embeddings)}")
 
         # davies_bouldin_score
-        davies_bouldin_score_ = davies_bouldin_score(
-            list(embeddings.values()), cluster_labels
-        )
+        davies_bouldin_score_ = davies_bouldin_score(list(embeddings.values()), cluster_labels)
         logging.info(f"Davies-Bouldin score: {davies_bouldin_score_}")
 
         # calinski_harabasz_score
-        calinski_harabasz_score_ = calinski_harabasz_score(
-            list(embeddings.values()), cluster_labels
-        )
+        calinski_harabasz_score_ = calinski_harabasz_score(list(embeddings.values()), cluster_labels)
         logging.info(f"Calinski-Harabasz score: {calinski_harabasz_score_}")
     else:
         silhouette_score_ = np.nan

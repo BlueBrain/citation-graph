@@ -110,51 +110,25 @@ def main(args):
     extended_article_mappings = {}
     for _, row in tqdm(articles_df.iterrows(), desc="Creating articles"):
         article_dict = dict(row)
-        article_dict["doi"] = (
-            None if pd.isna(article_dict["doi"]) else article_dict["doi"]
-        )
-        article_dict["abstract"] = (
-            None
-            if pd.isna(article_dict["abstract"])
-            else article_dict["abstract"]
-        )
-        article_dict["pmid"] = (
-            None
-            if pd.isna(article_dict["pmid"])
-            else str(int(article_dict["pmid"]))
-        )
-        article_dict["isbns"] = (
-            None if pd.isna(article_dict["isbns"]) else article_dict["isbns"]
-        )
+        article_dict["doi"] = None if pd.isna(article_dict["doi"]) else article_dict["doi"]
+        article_dict["abstract"] = None if pd.isna(article_dict["abstract"]) else article_dict["abstract"]
+        article_dict["pmid"] = None if pd.isna(article_dict["pmid"]) else str(int(article_dict["pmid"]))
+        article_dict["isbns"] = None if pd.isna(article_dict["isbns"]) else article_dict["isbns"]
         article_dict["europmc_id"] = (
-            str(article_dict["europmc_id"])
-            if not pd.isna(article_dict["europmc_id"])
-            else None
+            str(article_dict["europmc_id"]) if not pd.isna(article_dict["europmc_id"]) else None
         )
-        article_dict["citations"] = (
-            int(article_dict["citations"])
-            if not pd.isna(article_dict["citations"])
-            else 0
-        )
+        article_dict["citations"] = int(article_dict["citations"]) if not pd.isna(article_dict["citations"]) else 0
         article_dict["google_scholar_id"] = (
-            None
-            if pd.isna(article_dict["google_scholar_id"])
-            else article_dict["google_scholar_id"]
+            None if pd.isna(article_dict["google_scholar_id"]) else article_dict["google_scholar_id"]
         )
 
         if article_dict["is_published"] is False and args.ignore_unpublished:
-            logging.info(
-                f"Skipping article {article_dict['uid']} as it is not"
-                " published."
-            )
+            logging.info(f"Skipping article {article_dict['uid']} as it is not" " published.")
             continue
 
         try:
             # convert nan to None
-            article_dict = {
-                key: None if pd.isna(value) else value
-                for key, value in article_dict.items()
-            }
+            article_dict = {key: None if pd.isna(value) else value for key, value in article_dict.items()}
             extended_article = ExtendedArticle(**article_dict)
 
         except pydantic_core._pydantic_core.ValidationError as e:
@@ -185,15 +159,10 @@ def main(args):
         for line in tqdm(embeddings_file, desc="Adding embeddings"):
             embedding_json = json.loads(line)
             try:
-                extended_article = extended_article_mappings[
-                    embedding_json["article_uid"]
-                ]
+                extended_article = extended_article_mappings[embedding_json["article_uid"]]
                 extended_article.embedding = embedding_json["vector"]
             except KeyError:
-                logging.warning(
-                    "Embedding not found for article:"
-                    f" {embedding_json['article_uid']}"
-                )
+                logging.warning("Embedding not found for article:" f" {embedding_json['article_uid']}")
 
     # Set embedding to None for articles without embeddings
     for article in extended_articles:
@@ -202,9 +171,7 @@ def main(args):
 
     # Write extended articles to JSON file
     with open(output_path, "w", encoding="utf-8") as articles_file:
-        for article in tqdm(
-            extended_articles, desc="Writing extended articles"
-        ):
+        for article in tqdm(extended_articles, desc="Writing extended articles"):
             articles_file.write(article.json() + "\n")
 
     logging.info(f"Extended articles saved to {output_path}")
@@ -213,9 +180,7 @@ def main(args):
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "config_path",
         type=Path,

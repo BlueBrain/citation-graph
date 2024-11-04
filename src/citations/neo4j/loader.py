@@ -47,9 +47,7 @@ def create_indexes(tx: ManagedTransaction) -> None:
     tx.run("CREATE INDEX FOR (a:Article) ON (a.google_scholar_id)")
 
 
-def create_vector_index(
-    driver, index_name, label, property_name, dimensions, similarity_function
-):
+def create_vector_index(driver, index_name, label, property_name, dimensions, similarity_function):
     """
     Create a vector index in Neo4j.
 
@@ -107,9 +105,7 @@ def process_coordinates(article, coord_name):
     return article
 
 
-def add_coordinates_to_query(
-    query: str, articles: list[dict], coord_name: str
-) -> str:
+def add_coordinates_to_query(query: str, articles: list[dict], coord_name: str) -> str:
     """
     Add coordinates to the query if they are present in the articles.
 
@@ -124,11 +120,8 @@ def add_coordinates_to_query(
     """
     x_key = f"{coord_name}_x"
     y_key = f"{coord_name}_y"
-    if any(
-        x_key in article and y_key in article for article in articles
-    ) and all(
-        not pd.isna(article.get(x_key)) and not pd.isna(article.get(y_key))
-        for article in articles
+    if any(x_key in article and y_key in article for article in articles) and all(
+        not pd.isna(article.get(x_key)) and not pd.isna(article.get(y_key)) for article in articles
     ):
         logging.info(f"Found {coord_name.upper()} coordinates")
         query += f""",
@@ -160,10 +153,7 @@ def execute_query_with_logging(tx, query, params=None):
     try:
         result = tx.run(query, params)
         summary = result.consume()
-        logging.debug(
-            "Query executed successfully. Affected records:"
-            f" {summary.counters}"
-        )
+        logging.debug("Query executed successfully. Affected records:" f" {summary.counters}")
         return result
     except Neo4jError as e:
         logging.error(f"Neo4j Error: {e.message}. Query: {query}")
@@ -283,9 +273,7 @@ def build_cluster_set_query(params: dict) -> str:
     str
         The cluster SET query part.
     """
-    set_query = ", ".join(
-        [f'c.{param} = "{value}"' for param, value in params.items()]
-    )
+    set_query = ", ".join([f'c.{param} = "{value}"' for param, value in params.items()])
     return set_query
 
 
@@ -303,9 +291,7 @@ def build_cluster_match_query(params: dict) -> str:
     str
         The cluster MATCH query part.
     """
-    match_query = ", ".join(
-        [f'{param}: "{value}"' for param, value in params.items()]
-    )
+    match_query = ", ".join([f'{param}: "{value}"' for param, value in params.items()])
     return match_query
 
 
@@ -330,9 +316,7 @@ def batch_add_authors(tx: ManagedTransaction, authors: list[dict]) -> None:
     execute_query_with_logging(tx, query, {"authors": authors})
 
 
-def batch_add_institutions(
-    tx: ManagedTransaction, institutions: list[dict]
-) -> None:
+def batch_add_institutions(tx: ManagedTransaction, institutions: list[dict]) -> None:
     """
     Batch add institutions to the Neo4j database.
 
@@ -353,9 +337,7 @@ def batch_add_institutions(
     execute_query_with_logging(tx, query, {"institutions": institutions})
 
 
-def batch_add_article_cites_article(
-    tx: ManagedTransaction, connections: list[dict]
-) -> None:
+def batch_add_article_cites_article(tx: ManagedTransaction, connections: list[dict]) -> None:
     """
     Batch connect articles in the Neo4j database.
 
@@ -462,9 +444,7 @@ def add_author_num_bbp_articles_cites(tx: ManagedTransaction) -> None:
     execute_query_with_logging(tx, query)
 
 
-def batch_add_author_affiliated_with_institution(
-    tx: ManagedTransaction, connections: list[dict]
-) -> None:
+def batch_add_author_affiliated_with_institution(tx: ManagedTransaction, connections: list[dict]) -> None:
     """
     Batch connect authors to institutions in the Neo4j database.
 
@@ -485,9 +465,7 @@ def batch_add_author_affiliated_with_institution(
     execute_query_with_logging(tx, query, {"connections": connections})
 
 
-def batch_add_author_wrote_article(
-    tx: ManagedTransaction, connections: list[dict]
-) -> None:
+def batch_add_author_wrote_article(tx: ManagedTransaction, connections: list[dict]) -> None:
     """
     Batch connect authors to articles in the Neo4j database.
 

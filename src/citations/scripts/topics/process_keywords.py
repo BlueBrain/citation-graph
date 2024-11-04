@@ -26,16 +26,10 @@ def parse_arguments():
     argparse.Namespace
         Parsed command-line arguments.
     """
-    parser = argparse.ArgumentParser(
-        description="Process keywords and extract topics"
-    )
-    parser.add_argument(
-        "--neo4j-uri", default="bolt://localhost:7687", help="Neo4j URI"
-    )
+    parser = argparse.ArgumentParser(description="Process keywords and extract topics")
+    parser.add_argument("--neo4j-uri", default="bolt://localhost:7687", help="Neo4j URI")
     parser.add_argument("--neo4j-user", default="neo4j", help="Neo4j username")
-    parser.add_argument(
-        "--neo4j-password", default="password", help="Neo4j password"
-    )
+    parser.add_argument("--neo4j-password", default="password", help="Neo4j password")
     parser.add_argument(
         "--article-keywords",
         type=str,
@@ -82,11 +76,7 @@ def load_merge_suggestions(file_path: str) -> Dict[str, List[str]]:
         Dictionary of keyword merge suggestions where the key is the merged keyword and the value is the list of original keywords.
     """
     merge_suggestions = {}
-    if (
-        file_path
-        and os.path.exists(file_path)
-        and os.path.getsize(file_path) > 0
-    ):
+    if file_path and os.path.exists(file_path) and os.path.getsize(file_path) > 0:
         with open(file_path, "r") as f:
             for line in f:
                 suggestion = json.loads(line)
@@ -130,10 +120,7 @@ def apply_merge_suggestions(
         Dictionary of updated article keywords where the key is the article UID and the value is the list of keywords.
     """
     if not merge_suggestions:
-        logging.info(
-            "No merge suggestions provided or file is empty. Skipping merge"
-            " process."
-        )
+        logging.info("No merge suggestions provided or file is empty. Skipping merge" " process.")
         return article_keywords
 
     # Create a dictionary mapping original keywords to their merged counterparts
@@ -145,18 +132,14 @@ def apply_merge_suggestions(
 
     # Update article keywords using dictionary comprehension and set intersection
     updated_article_keywords = {
-        article_id: list(
-            {merged_keywords.get(keyword, keyword) for keyword in keywords}
-        )
+        article_id: list({merged_keywords.get(keyword, keyword) for keyword in keywords})
         for article_id, keywords in article_keywords.items()
     }
 
     return updated_article_keywords
 
 
-def extract_topics(
-    clusters: Dict[int, List[str]], article_keywords: Dict[str, List[str]]
-) -> Dict[int, Dict]:
+def extract_topics(clusters: Dict[int, List[str]], article_keywords: Dict[str, List[str]]) -> Dict[int, Dict]:
     """
     Extract topics from clusters using the article keywords.
 
@@ -191,11 +174,7 @@ def extract_topics(
             cluster_keywords.update(article_keywords.get(uid, []))
 
         all_keywords = ", ".join(cluster_keywords)
-        topic_summary = (
-            topic_chain.invoke({"context": all_keywords})
-            .get("text", "")
-            .strip()
-        )
+        topic_summary = topic_chain.invoke({"context": all_keywords}).get("text", "").strip()
 
         results[cluster_id] = {
             "keywords": list(cluster_keywords),
@@ -246,9 +225,7 @@ def update_neo4j(
             DETACH DELETE t
             """
         )
-        logging.info(
-            "Existing Keyword and Topic nodes and their relationships deleted."
-        )
+        logging.info("Existing Keyword and Topic nodes and their relationships deleted.")
 
         # Delete existing topic_summary and keywords properties on Cluster nodes
         session.run(
@@ -257,10 +234,7 @@ def update_neo4j(
             REMOVE c.topic_summary, c.keywords
             """
         )
-        logging.info(
-            "Existing topic_summary and keywords properties removed from"
-            " Cluster nodes."
-        )
+        logging.info("Existing topic_summary and keywords properties removed from" " Cluster nodes.")
 
         # Update article keywords
         for article_id, keywords in article_keywords.items():
@@ -326,19 +300,11 @@ def main():
         merge_suggestions = load_merge_suggestions(args.merge_suggestions)
         if merge_suggestions:
             logging.info("Applying merge suggestions...")
-            article_keywords = apply_merge_suggestions(
-                article_keywords, merge_suggestions
-            )
+            article_keywords = apply_merge_suggestions(article_keywords, merge_suggestions)
         else:
-            logging.info(
-                "No merge suggestions found or file is empty. Proceeding with"
-                " original keywords."
-            )
+            logging.info("No merge suggestions found or file is empty. Proceeding with" " original keywords.")
     else:
-        logging.info(
-            "Skipping merge process as requested or no merge suggestions file"
-            " provided."
-        )
+        logging.info("Skipping merge process as requested or no merge suggestions file" " provided.")
 
     # check if cluster_results exists
     if os.path.exists("data/cluster_results.json") and not args.force_run:
@@ -349,17 +315,13 @@ def main():
         cluster_results = extract_topics(clusters, article_keywords)
 
     logging.info("Updating Neo4j database...")
-    update_neo4j(
-        article_keywords, cluster_results, clusters, clustering_algorithm
-    )
+    update_neo4j(article_keywords, cluster_results, clusters, clustering_algorithm)
 
     # Save updated article keywords
     logging.info("Saving updated article keywords...")
     with open("data/updated_article_keywords.json", "w") as f:
         json.dump(article_keywords, f, indent=4)
-    logging.info(
-        "Updated article keywords saved to data/updated_article_keywords.json"
-    )
+    logging.info("Updated article keywords saved to data/updated_article_keywords.json")
 
     # Save cluster results
     with open("data/cluster_results.json", "w") as f:

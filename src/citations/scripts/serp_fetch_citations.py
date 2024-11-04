@@ -16,9 +16,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 load_dotenv()
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class SerpApiCitationChecker:
@@ -142,23 +140,14 @@ class SerpApiCitationChecker:
             try:
                 data = self.make_api_request(params)
             except Exception as e:
-                logging.error(
-                    "Error fetching article ID for"
-                    f" {field_name} '{field_value}': {str(e)}"
-                )
+                logging.error("Error fetching article ID for" f" {field_name} '{field_value}': {str(e)}")
                 self.save_exception("get_article_id", "", field_value, str(e))
                 continue
 
             for result in data.get("organic_results", []):
-                if (
-                    field_name == "title"
-                    and result["title"].lower() == title.lower()
-                ):
+                if field_name == "title" and result["title"].lower() == title.lower():
                     return result["result_id"]
-                elif (
-                    field_name in ["doi", "pmid", "url", "isbns"]
-                    and title.lower() in result["title"].lower()
-                ):
+                elif field_name in ["doi", "pmid", "url", "isbns"] and title.lower() in result["title"].lower():
                     return result["result_id"]
 
         logging.warning(f"No article ID found for title: {title}")
@@ -202,9 +191,7 @@ class SerpApiCitationChecker:
                 }
                 data = self.make_api_request(params)
 
-                total_citations = int(
-                    data["search_information"]["total_results"]
-                )
+                total_citations = int(data["search_information"]["total_results"])
                 citations = data.get("organic_results", [])
 
                 for citation in citations:
@@ -242,11 +229,7 @@ class SerpApiCitationChecker:
                     all_citations.append(citation_info)
 
                     # Log missing fields
-                    missing_fields = [
-                        field
-                        for field, value in citation_info.items()
-                        if value is None
-                    ]
+                    missing_fields = [field for field, value in citation_info.items() if value is None]
                     if missing_fields:
                         self.save_exception(
                             "get_citations",
@@ -255,18 +238,12 @@ class SerpApiCitationChecker:
                             f"Missing fields: {', '.join(missing_fields)}",
                         )
 
-                if (
-                    len(all_citations) >= total_citations
-                    or len(citations) == 0
-                ):
+                if len(all_citations) >= total_citations or len(citations) == 0:
                     break
 
                 start += 20
         except Exception as e:
-            logging.error(
-                f"Error fetching citations for article ID '{article_id}':"
-                f" {str(e)}"
-            )
+            logging.error(f"Error fetching citations for article ID '{article_id}':" f" {str(e)}")
             self.save_exception("get_citations", "", article_id, str(e))
 
         return {"total_citations": total_citations, "citations": all_citations}
@@ -308,9 +285,7 @@ class SerpApiCitationChecker:
             "reason": reason,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
         }
-        with open(
-            os.path.join(self.output_dir, "serp_api_exceptions.json"), "a"
-        ) as f:
+        with open(os.path.join(self.output_dir, "serp_api_exceptions.json"), "a") as f:
             json.dump(exception, f)
             f.write("\n")
 
@@ -345,9 +320,7 @@ class SerpApiCitationChecker:
                     "citations": citations["citations"],
                 }
             else:
-                logging.warning(
-                    f"No article ID found for title: {row['title']}"
-                )
+                logging.warning(f"No article ID found for title: {row['title']}")
                 self.save_exception(
                     "get_article_id",
                     "",
@@ -377,9 +350,7 @@ class SerpApiCitationChecker:
         """
         results = []
 
-        output_file = os.path.join(
-            self.output_dir, "serp_citation_results.jsonl"
-        )
+        output_file = os.path.join(self.output_dir, "serp_citation_results.jsonl")
 
         with (
             open(self.csv_file, "r") as file,
@@ -394,10 +365,7 @@ class SerpApiCitationChecker:
                     outfile.write("\n")
 
                 if self.requests_made >= self.max_requests_per_hour:
-                    logging.info(
-                        f"Reached {self.max_requests_per_hour} requests."
-                        " Waiting for 1 hour..."
-                    )
+                    logging.info(f"Reached {self.max_requests_per_hour} requests." " Waiting for 1 hour...")
                     time.sleep(3600)
                     self.requests_made = 0
 
@@ -417,12 +385,8 @@ def get_parser():
     argparse.ArgumentParser
         The argument parser configured with the necessary arguments.
     """
-    parser = argparse.ArgumentParser(
-        description="Fetch citations for BBP articles."
-    )
-    parser.add_argument(
-        "articles_csv", type=str, help="Path to the input CSV file."
-    )
+    parser = argparse.ArgumentParser(description="Fetch citations for BBP articles.")
+    parser.add_argument("articles_csv", type=str, help="Path to the input CSV file.")
     parser.add_argument(
         "--output_dir",
         type=str,
@@ -459,10 +423,7 @@ def main():
 
     logging.info(f"Processed {len(results)} articles")
     logging.info(f"Number of SERP_API requests made: {checker.requests_made}")
-    logging.info(
-        "Exceptions saved to"
-        f" {os.path.join(output_dir, 'serp_api_exceptions.json')}"
-    )
+    logging.info("Exceptions saved to" f" {os.path.join(output_dir, 'serp_api_exceptions.json')}")
 
 
 if __name__ == "__main__":

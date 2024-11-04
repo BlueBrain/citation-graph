@@ -12,9 +12,7 @@ from tqdm import tqdm
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "bbp_publications_path",
         type=Path,
@@ -45,19 +43,11 @@ def main(args):
         processed_article_titles = []
 
     serp_output_path = args.serp_output_path
-    bbp_publications = bbp_publications[
-        ~bbp_publications["Title"].isin(processed_article_titles)
-    ]
-    for _, bbp_publication_row in tqdm(
-        bbp_publications.iterrows(), desc="Processing BBP articles"
-    ):
+    bbp_publications = bbp_publications[~bbp_publications["Title"].isin(processed_article_titles)]
+    for _, bbp_publication_row in tqdm(bbp_publications.iterrows(), desc="Processing BBP articles"):
         title = bbp_publication_row["Title"]
-        search_result = serpapi.search(
-            q=title, engine="google_scholar", api_key=args.serp_api_key
-        )
-        file_path = os.path.join(
-            serp_output_path, f"{title.replace(os.path.sep, '')}.json"
-        )
+        search_result = serpapi.search(q=title, engine="google_scholar", api_key=args.serp_api_key)
+        file_path = os.path.join(serp_output_path, f"{title.replace(os.path.sep, '')}.json")
         if len(file_path) > 255:
             file_path = file_path[:250] + ".json"
 

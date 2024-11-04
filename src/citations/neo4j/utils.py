@@ -86,9 +86,7 @@ def count_edges_of_type(tx: Transaction, relationship: str) -> int | None:
     -------
         The number of edges of the given type
     """
-    result = tx.run(
-        f"MATCH ()-[r:{relationship}]->() RETURN count(r) as num_edges"
-    )
+    result = tx.run(f"MATCH ()-[r:{relationship}]->() RETURN count(r) as num_edges")
     record = result.single()
     if record is None:
         return None
@@ -127,9 +125,7 @@ def remove_self_loops_of_type(tx: ManagedTransaction, rel_type: str) -> None:
         logging.error(f"Error removing self loops of type {rel_type}: {e}")
 
 
-def remove_relationship_type(
-    tx: ManagedTransaction, relationship: str
-) -> None:
+def remove_relationship_type(tx: ManagedTransaction, relationship: str) -> None:
     """
     Remove a specific relationship type from the Neo4j database.
 
@@ -180,15 +176,9 @@ def drop_all_constraints_and_indexes(tx):
             if "IndexNotFoundError" in str(e):
                 try:
                     tx.run("DROP INDEX ON :Label(property)")
-                    print(
-                        f"Successfully dropped index {index_name} using"
-                        " alternate method"
-                    )
+                    print(f"Successfully dropped index {index_name} using" " alternate method")
                 except ClientError as inner_e:
-                    print(
-                        f"Error dropping index {index_name} using alternate"
-                        f" method: {str(inner_e)}"
-                    )
+                    print(f"Error dropping index {index_name} using alternate" f" method: {str(inner_e)}")
 
 
 def print_constraints(tx: ManagedTransaction) -> None:

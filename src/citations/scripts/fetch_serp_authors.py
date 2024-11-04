@@ -54,9 +54,7 @@ def main(args):
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "bbp_articles_path",
         type=pathlib.Path,
@@ -65,10 +63,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "output_directory",
         type=pathlib.Path,
-        help=(
-            "Path the the output directory where we will store the author"
-            " profile jsons."
-        ),
+        help=("Path the the output directory where we will store the author" " profile jsons."),
     )
     parser.add_argument(
         "serp_api_key",
@@ -78,10 +73,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--bbp_articles_wip_path",
         type=pathlib.Path,
-        help=(
-            "Path the the csv file containing work in progress BBP"
-            " publications"
-        ),
+        help=("Path the the csv file containing work in progress BBP" " publications"),
     )
     parser.add_argument(
         "--bbp_theses_wip_path",

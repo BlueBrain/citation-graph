@@ -38,9 +38,7 @@ def read_jsonl(file_path: str) -> List[Dict[str, Any]]:
         return [json.loads(line) for line in file]
 
 
-def write_csv(
-    file_path: str, headers: List[str], data: List[List[Any]]
-) -> None:
+def write_csv(file_path: str, headers: List[str], data: List[List[Any]]) -> None:
     """
     Write data to a CSV file.
 
@@ -92,15 +90,10 @@ def process_articles(data: List[Dict[str, Any]]) -> pd.DataFrame:
                 ]
             )
     # convert to pandas df and drop duplicates based on article_id and result_id
-    articles_df = pd.DataFrame(
-        articles, columns=["article_id", "citations", "title", "link"]
-    )
+    articles_df = pd.DataFrame(articles, columns=["article_id", "citations", "title", "link"])
     articles_df = articles_df.drop_duplicates(subset=["article_id", "title"])
 
-    print(
-        f"Total BBP citations: {total_bbp_citations} out of"
-        f" {total_bbp_articles} articles"
-    )
+    print(f"Total BBP citations: {total_bbp_citations} out of" f" {total_bbp_articles} articles")
     return articles_df
 
 
@@ -147,17 +140,11 @@ def process_author_wrote_article(
     for item in data:
         for citation in item.get("citations", []):
             for author in citation.get("authors", []):
-                author_wrote_article.append(
-                    [author["author_id"], citation["result_id"]]
-                )
+                author_wrote_article.append([author["author_id"], citation["result_id"]])
 
     # convert to pandas df and drop duplicates based on author_id,article_id pair
-    author_wrote_article_df = pd.DataFrame(
-        author_wrote_article, columns=["author_id", "article_id"]
-    )
-    author_wrote_article_df = author_wrote_article_df.drop_duplicates(
-        subset=["author_id", "article_id"]
-    )
+    author_wrote_article_df = pd.DataFrame(author_wrote_article, columns=["author_id", "article_id"])
+    author_wrote_article_df = author_wrote_article_df.drop_duplicates(subset=["author_id", "article_id"])
 
     return author_wrote_article_df
 
@@ -179,17 +166,11 @@ def process_article_cites_article(
     article_cites_article = []
     for item in data:
         for citation in item.get("citations", []):
-            article_cites_article.append(
-                [citation["result_id"], item["article_id"]]
-            )
+            article_cites_article.append([citation["result_id"], item["article_id"]])
 
     # convert to pandas df and drop duplicates based on source and target
-    article_cites_article_df = pd.DataFrame(
-        article_cites_article, columns=["source", "target"]
-    )
-    article_cites_article_df = article_cites_article_df.drop_duplicates(
-        subset=["source", "target"]
-    )
+    article_cites_article_df = pd.DataFrame(article_cites_article, columns=["source", "target"])
+    article_cites_article_df = article_cites_article_df.drop_duplicates(subset=["source", "target"])
 
     return article_cites_article_df
 
@@ -217,15 +198,11 @@ def main(input_file: str, output_dir: str) -> None:
 
     # Process and write author_wrote_article_serp.csv
     author_wrote_article = process_author_wrote_article(data)
-    author_wrote_article.to_csv(
-        output_path / "author_wrote_article_serp.csv", index=False
-    )
+    author_wrote_article.to_csv(output_path / "author_wrote_article_serp.csv", index=False)
 
     # Process and write article_cites_article_serp.csv
     article_cites_article = process_article_cites_article(data)
-    article_cites_article.to_csv(
-        output_path / "article_cites_article_serp.csv", index=False
-    )
+    article_cites_article.to_csv(output_path / "article_cites_article_serp.csv", index=False)
 
     # log how many articles, authors, author_wrote_article, article_cites_article
     print(f"Number of articles: {len(articles)}")
@@ -235,12 +212,8 @@ def main(input_file: str, output_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Process SERP API data from JSONL to CSV files."
-    )
-    parser.add_argument(
-        "--input", required=True, help="Path to the input JSONL file"
-    )
+    parser = argparse.ArgumentParser(description="Process SERP API data from JSONL to CSV files.")
+    parser.add_argument("--input", required=True, help="Path to the input JSONL file")
     parser.add_argument(
         "--output",
         required=True,

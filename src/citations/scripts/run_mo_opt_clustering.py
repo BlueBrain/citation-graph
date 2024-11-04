@@ -29,33 +29,23 @@ CLUSTERING_ALGORITHMS: Dict[str, Callable] = {
 }
 
 
-def optimize_clustering(
-    algorithm: str, embeddings: Dict[str, List[float]], **kwargs
-):
+def optimize_clustering(algorithm: str, embeddings: Dict[str, List[float]], **kwargs):
     """Optimize the clustering algorithm using multi-objective Optuna."""
 
     def objective(trial):
         # Define hyperparameters to be optimized based on the algorithm
         if algorithm == "hdbscan":
             params = {
-                "min_cluster_size": trial.suggest_int(
-                    "min_cluster_size", 5, 50
-                ),
+                "min_cluster_size": trial.suggest_int("min_cluster_size", 5, 50),
                 "min_samples": trial.suggest_int("min_samples", 5, 20),
-                "cluster_selection_epsilon": trial.suggest_float(
-                    "cluster_selection_epsilon", 0.01, 0.1
-                ),
-                "metric": trial.suggest_categorical(
-                    "metric", ["euclidean", "chebyshev", "cosine"]
-                ),
+                "cluster_selection_epsilon": trial.suggest_float("cluster_selection_epsilon", 0.01, 0.1),
+                "metric": trial.suggest_categorical("metric", ["euclidean", "chebyshev", "cosine"]),
             }
         elif algorithm == "dbscan":
             params = {
                 "eps": trial.suggest_float("eps", 0.1, 1.0),
                 "min_samples": trial.suggest_int("min_samples", 5, 50),
-                "metric": trial.suggest_categorical(
-                    "metric", ["euclidean", "chebyshev", "cosine"]
-                ),
+                "metric": trial.suggest_categorical("metric", ["euclidean", "chebyshev", "cosine"]),
                 "p": trial.suggest_float("p", 1.5, 2.5),
             }
         elif algorithm == "kmeans":
@@ -65,9 +55,7 @@ def optimize_clustering(
         elif algorithm == "agglomerative":
             params = {
                 "n_clusters": trial.suggest_int("n_clusters", 15, 100),
-                "linkage": trial.suggest_categorical(
-                    "linkage", ["ward", "complete", "average", "single"]
-                ),
+                "linkage": trial.suggest_categorical("linkage", ["ward", "complete", "average", "single"]),
             }
 
         # Run clustering with the suggested parameters
@@ -107,9 +95,7 @@ def optimize_clustering(
     return cluster_analysis
 
 
-def run_clustering(
-    embeddings: Dict[str, List[float]], algorithm: str, **kwargs
-) -> ClusterAnalysis:
+def run_clustering(embeddings: Dict[str, List[float]], algorithm: str, **kwargs) -> ClusterAnalysis:
     """Run the specified clustering algorithm on the embeddings.
 
     Parameters
@@ -146,9 +132,7 @@ def save_results(file_path: str, extended_articles: List[ExtendedArticle]):
     None
     """
     with open(file_path, "w") as f:
-        json.dump(
-            [article.dict() for article in extended_articles], f, indent=2
-        )
+        json.dump([article.dict() for article in extended_articles], f, indent=2)
 
 
 def main(
@@ -204,9 +188,7 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Process and cluster article embeddings."
-    )
+    parser = argparse.ArgumentParser(description="Process and cluster article embeddings.")
     parser.add_argument(
         "input_file",
         type=str,

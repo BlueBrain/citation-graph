@@ -37,9 +37,7 @@ def generate_umap_coordinates(embeddings, params: UMAPParams):
     return umap_coordinates.tolist()
 
 
-def create_dimension_reduction_result(
-    uids, embeddings, reduced_coords, params
-):
+def create_dimension_reduction_result(uids, embeddings, reduced_coords, params):
     """Create DimensionReductionResult object."""
     return DimensionReductionResult(
         method="UMAP",
@@ -61,17 +59,13 @@ def main(args):
     logging.info(f"Reading embeddings from {args.input_file}...")
     uids, embeddings = read_jsonl(args.input_file)
 
-    umap_params = UMAPParams(
-        n_components=args.n_components, random_state=args.random_state
-    )
+    umap_params = UMAPParams(n_components=args.n_components, random_state=args.random_state)
 
     logging.info("Generating UMAP coordinates...")
     reduced_coords = generate_umap_coordinates(embeddings, umap_params)
 
     logging.info("Creating DimensionReductionResult object...")
-    result = create_dimension_reduction_result(
-        uids, embeddings, reduced_coords, umap_params
-    )
+    result = create_dimension_reduction_result(uids, embeddings, reduced_coords, umap_params)
 
     logging.info(f"Saving results to {args.output_file}...")
     save_to_json(result, args.output_file)
@@ -81,10 +75,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=(
-            "Generate UMAP coordinates for articles and save them to a JSON"
-            " file."
-        )
+        description=("Generate UMAP coordinates for articles and save them to a JSON" " file.")
     )
     parser.add_argument(
         "--input_file",

@@ -22,9 +22,7 @@ from tenacity import (  # for exponential backoff
 
 from citations.schemas import ClusterAnalysis
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -33,15 +31,10 @@ load_dotenv()
 class Config:
     """Configuration settings."""
 
-    NEO4J_URI: str = (
-        os.getenv("NEO4J_URI", "bolt://localhost:7687")
-        or "bolt://localhost:7687"
-    )
+    NEO4J_URI: str = os.getenv("NEO4J_URI", "bolt://localhost:7687") or "bolt://localhost:7687"
     NEO4J_USER: str = os.getenv("NEO4J_USER", "neo4j") or "neo4j"
     NEO4J_PASSWORD: str = os.getenv("NEO4J_PASSWORD", "password") or "password"
-    OPENAI_API_KEY: SecretStr = SecretStr(
-        os.getenv("OPENAI_API_KEY") or "your_default_api_key"
-    )
+    OPENAI_API_KEY: SecretStr = SecretStr(os.getenv("OPENAI_API_KEY") or "your_default_api_key")
     DEFAULT_NUM_KEYWORDS: int = 3
 
 
@@ -53,9 +46,7 @@ if config.OPENAI_API_KEY is None:
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Generate keywords and merge suggestions"
-    )
+    parser = argparse.ArgumentParser(description="Generate keywords and merge suggestions")
     parser.add_argument(
         "--json-path",
         type=str,
@@ -135,18 +126,11 @@ async def extract_keywords_for_article(
         Dictionary with the UID of the article as the key and a list of keywords as the value.
     """
     document = Document(page_content=text)
-    keywords = (
-        (await keyword_chain.ainvoke(document))
-        .get("text", "")
-        .strip()
-        .split(", ")
-    )
+    keywords = (await keyword_chain.ainvoke(document)).get("text", "").strip().split(", ")
     return {uid: keywords[:num_keywords]}
 
 
-async def extract_keywords(
-    clusters: Dict[int, List[str]], num_keywords: int, args
-) -> Dict[str, List[str]]:
+async def extract_keywords(clusters: Dict[int, List[str]], num_keywords: int, args) -> Dict[str, List[str]]:
     """
     Extract keywords from articles in clusters.
 
@@ -181,9 +165,7 @@ async def extract_keywords(
         with open("data/article_keywords.json", "r") as f:
             article_keywords = json.load(f)
 
-    driver = GraphDatabase.driver(
-        config.NEO4J_URI, auth=(config.NEO4J_USER, config.NEO4J_PASSWORD)
-    )
+    driver = GraphDatabase.driver(config.NEO4J_URI, auth=(config.NEO4J_USER, config.NEO4J_PASSWORD))
 
     async def process_cluster(cluster_id: int, article_uids: List[str]):
         """
@@ -214,30 +196,21 @@ async def extract_keywords(
                 record = neo4j_result.single()
                 if record:
                     text, uid = record["text"], record["uid"]
-                    task = extract_keywords_for_article(
-                        text, uid, keyword_chain, num_keywords
-                    )
+                    task = extract_keywords_for_article(text, uid, keyword_chain, num_keywords)
                     tasks.append(task)
 
         results = await asyncio.gather(*tasks)
         for result in results:
             article_keywords.update(result)
 
-    await asyncio.gather(
-        *[
-            process_cluster(cluster_id, article_uids)
-            for cluster_id, article_uids in clusters.items()
-        ]
-    )
+    await asyncio.gather(*[process_cluster(cluster_id, article_uids) for cluster_id, article_uids in clusters.items()])
     driver.close()
 
     return article_keywords
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-async def generate_merge_suggestions(
-    keywords: List[str], llm: ChatOpenAI
-) -> List[Dict[str, List[str]]]:
+async def generate_merge_suggestions(keywords: List[str], llm: ChatOpenAI) -> List[Dict[str, List[str]]]:
     """
     Generate suggestions for merging similar keywords.
 
@@ -275,10 +248,7 @@ async def generate_merge_suggestions(
     merge_chain = LLMChain(llm=llm, prompt=merge_prompt)
 
     merge_suggestions = (
-        (await merge_chain.ainvoke({"keywords": ", ".join(keywords)}))
-        .get("text", "")
-        .strip()
-        .split("\n")
+        (await merge_chain.ainvoke({"keywords": ", ".join(keywords)})).get("text", "").strip().split("\n")
     )
 
     suggestions = []
@@ -290,9 +260,7 @@ async def generate_merge_suggestions(
             logger.warning(f"Unexpected format in suggestion: {suggestion}")
             continue
         merged_keyword = parts[0].split(". ")[-1].strip()
-        existing_keywords = [
-            kw.strip() for kw in parts[1].strip("[]").split(",")
-        ]
+        existing_keywords = [kw.strip() for kw in parts[1].strip("[]").split(",")]
         suggestions.append({merged_keyword: existing_keywords})
 
     return suggestions
@@ -305,24 +273,16 @@ async def main():
 
     if os.path.exists("data/article_keywords.json"):
         logger.info("Extracting Keywords from Articles")
-        article_keywords = await extract_keywords(
-            all_clusters, args.num_keywords, args
-        )
+        article_keywords = await extract_keywords(all_clusters, args.num_keywords, args)
         with open("data/article_keywords.json", "w") as f:
             json.dump(article_keywords, f, indent=4)
         logger.info("Article keywords saved to data/article_keywords.json")
 
-    if args.force_suggest or not os.path.exists(
-        "data/keyword_merge_suggestions.jsonl"
-    ):
+    if args.force_suggest or not os.path.exists("data/keyword_merge_suggestions.jsonl"):
         with open("data/article_keywords.json", "r") as f:
             article_keywords = json.load(f)
         logger.info("Generating suggestions for merging similar keywords.")
-        all_keywords = {
-            keyword
-            for keywords in article_keywords.values()
-            for keyword in keywords
-        }
+        all_keywords = {keyword for keywords in article_keywords.values() for keyword in keywords}
         merge_suggestions = await generate_merge_suggestions(
             all_keywords,
             ChatOpenAI(
@@ -334,9 +294,7 @@ async def main():
         with open("data/keyword_merge_suggestions.jsonl", "w") as f:
             for suggestion in merge_suggestions:
                 f.write(json.dumps(suggestion) + "\n")
-        logger.info(
-            "Suggestions saved to data/keyword_merge_suggestions.jsonl"
-        )
+        logger.info("Suggestions saved to data/keyword_merge_suggestions.jsonl")
 
 
 if __name__ == "__main__":

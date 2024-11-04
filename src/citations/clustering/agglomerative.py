@@ -43,10 +43,7 @@ def run_agglomerative_clustering(
     """
     clustering_model = AgglomerativeClustering(**kwargs)
 
-    logging.info(
-        "Running Agglomerative clustering with params"
-        f" {clustering_model.get_params()}..."
-    )
+    logging.info("Running Agglomerative clustering with params" f" {clustering_model.get_params()}...")
     st_time = time.time()
     # Convert embeddings to numpy array
     embedding_array = np.array(list(embeddings.values()))
@@ -56,25 +53,13 @@ def run_agglomerative_clustering(
 
     # Calculate evaluation metrics
     logging.info("Calculating evaluation metrics...")
-    labels = np.array(
-        [
-            i
-            for i in range(len(set(cluster_labels)))
-            if len(set(cluster_labels)) > 1
-        ]
-    )
+    labels = np.array([i for i in range(len(set(cluster_labels))) if len(set(cluster_labels)) > 1])
     logging.info(f"Number of clusters: {len(labels)}")
 
     if len(set(cluster_labels)) > 1:
-        silhouette_score_ = silhouette_score(
-            embedding_array, cluster_labels, metric="cosine"
-        )
-        davies_bouldin_score_ = davies_bouldin_score(
-            embedding_array, cluster_labels
-        )
-        calinski_harabasz_score_ = calinski_harabasz_score(
-            embedding_array, cluster_labels
-        )
+        silhouette_score_ = silhouette_score(embedding_array, cluster_labels, metric="cosine")
+        davies_bouldin_score_ = davies_bouldin_score(embedding_array, cluster_labels)
+        calinski_harabasz_score_ = calinski_harabasz_score(embedding_array, cluster_labels)
         logging.info(f"Silhouette score: {silhouette_score_}")
         logging.info(f"Davies-Bouldin score: {davies_bouldin_score_}")
         logging.info(f"Calinski-Harabasz score: {calinski_harabasz_score_}")

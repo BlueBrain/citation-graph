@@ -41,10 +41,7 @@ def run_kmeans_clustering(
     """
     clustering_model = KMeans(**kwargs)
 
-    logging.info(
-        "Running KMeans clustering with params"
-        f" {clustering_model.get_params()}..."
-    )
+    logging.info("Running KMeans clustering with params" f" {clustering_model.get_params()}...")
     st_time = time.time()
     # Convert embeddings to numpy array
     embedding_array = np.array(list(embeddings.values()))
@@ -53,23 +50,17 @@ def run_kmeans_clustering(
 
     logging.info("Calculating evaluation metrics...")
     if len(set(cluster_labels)) > 1:
-        silhouette_score_ = silhouette_score(
-            list(embeddings.values()), cluster_labels, metric="cosine"
-        )
+        silhouette_score_ = silhouette_score(list(embeddings.values()), cluster_labels, metric="cosine")
         logging.info(f"Silhouette score: {silhouette_score_}")
         logging.info(f"Number of clusters: {len(set(cluster_labels))}")
         logging.info(f"Number of articles: {len(embeddings)}")
 
         # davies_bouldin_score
-        davies_bouldin_score_ = davies_bouldin_score(
-            list(embeddings.values()), cluster_labels
-        )
+        davies_bouldin_score_ = davies_bouldin_score(list(embeddings.values()), cluster_labels)
         logging.info(f"Davies-Bouldin score: {davies_bouldin_score_}")
 
         # calinski_harabasz_score
-        calinski_harabasz_score_ = calinski_harabasz_score(
-            list(embeddings.values()), cluster_labels
-        )
+        calinski_harabasz_score_ = calinski_harabasz_score(list(embeddings.values()), cluster_labels)
         logging.info(f"Calinski-Harabasz score: {calinski_harabasz_score_}")
     else:
         silhouette_score_ = np.nan

@@ -20,9 +20,7 @@ from citations.dataframe import (
 logger = logging.getLogger(__name__)
 
 
-def load_authors_state(
-    checkpoint_dir: str, articles: pd.DataFrame, only_get_bbp_authors: bool
-) -> tuple:
+def load_authors_state(checkpoint_dir: str, articles: pd.DataFrame, only_get_bbp_authors: bool) -> tuple:
     """
     Load a checkpoint for the gather authors script if exists or return an empty state.
 
@@ -61,9 +59,7 @@ def load_authors_state(
     ckpt_exists = False
     if checkpoint_dir is not None:
         os.makedirs(checkpoint_dir, exist_ok=True)
-        articles_processed_path = os.path.join(
-            checkpoint_dir, "articles_processed.csv"
-        )
+        articles_processed_path = os.path.join(checkpoint_dir, "articles_processed.csv")
         ckpt_exists = os.path.exists(articles_processed_path)
 
     if ckpt_exists:
@@ -86,36 +82,22 @@ def load_authors_state(
         authors_df = pd.read_csv(os.path.join(checkpoint_dir, "authors.csv"))
         authors = [dict(author) for _, author in authors_df.iterrows()]
         all_author_uids.update([author["uid"] for author in authors])
-        institutions_df = pd.read_csv(
-            os.path.join(checkpoint_dir, "institutions.csv")
-        )
-        institutions = [
-            dict(institution) for _, institution in institutions_df.iterrows()
-        ]
+        institutions_df = pd.read_csv(os.path.join(checkpoint_dir, "institutions.csv"))
+        institutions = [dict(institution) for _, institution in institutions_df.iterrows()]
         all_institution_uids.update([inst["uid"] for inst in institutions])
-        author_wrote_article_df = pd.read_csv(
-            os.path.join(checkpoint_dir, "author_wrote_article.csv")
-        )
-        author_wrote_article = [
-            dict(wrote) for _, wrote in author_wrote_article_df.iterrows()
-        ]
+        author_wrote_article_df = pd.read_csv(os.path.join(checkpoint_dir, "author_wrote_article.csv"))
+        author_wrote_article = [dict(wrote) for _, wrote in author_wrote_article_df.iterrows()]
         author_aff_institution_df = pd.read_csv(
             os.path.join(
                 checkpoint_dir,
                 "author_affiliated_with_institution.csv",
             )
         )
-        author_aff_institution = [
-            dict(aff) for _, aff in author_aff_institution_df.iterrows()
-        ]
+        author_aff_institution = [dict(aff) for _, aff in author_aff_institution_df.iterrows()]
 
         # Subtract already processed articles
-        merged_df = articles.merge(
-            articles_processed, how="left", indicator=True
-        )
-        remaining_articles = merged_df[
-            merged_df["_merge"] == "left_only"
-        ].drop(columns="_merge")
+        merged_df = articles.merge(articles_processed, how="left", indicator=True)
+        remaining_articles = merged_df[merged_df["_merge"] == "left_only"].drop(columns="_merge")
     else:
         articles_processed = pd.DataFrame(columns=articles.columns)
         authors = []
@@ -185,18 +167,12 @@ def save_authors_results(
     df = pd.DataFrame(institutions, columns=INSTITUTION_COLUMNS)
     if len(df) > 0:
         df.sort_values(by="uid", inplace=True)
-    df.to_csv(
-        os.path.join(output_dir, "institutions.csv"), index=False, header=True
-    )
+    df.to_csv(os.path.join(output_dir, "institutions.csv"), index=False, header=True)
     df = pd.DataFrame(authors, columns=AUTHOR_COLUMNS)
     if len(df) > 0:
         df.sort_values(by="uid", inplace=True)
-    df.to_csv(
-        os.path.join(output_dir, "authors.csv"), index=False, header=True
-    )
-    df = pd.DataFrame(
-        author_wrote_article, columns=AUTHOR_WROTE_ARTICLE_COLUMNS
-    )
+    df.to_csv(os.path.join(output_dir, "authors.csv"), index=False, header=True)
+    df = pd.DataFrame(author_wrote_article, columns=AUTHOR_WROTE_ARTICLE_COLUMNS)
     if len(df) > 0:
         df.sort_values(by=["author_uid", "article_uid"], inplace=True)
     df.to_csv(
@@ -239,14 +215,8 @@ def get_author_ids(
         A list of dictionaries, where each dictionary represents an author and their associated information.
 
     """
-    article_orcid_ids = list(
-        europmc_wrote[europmc_wrote["article_uid"] == row.uid]["author_uid"]
-    )
-    article_orcid_ids.extend(
-        orcid.fetch_article_orcidids(
-            doi, pmid, row.title, top_n_orcid=top_n_orcid
-        )
-    )
+    article_orcid_ids = list(europmc_wrote[europmc_wrote["article_uid"] == row.uid]["author_uid"])
+    article_orcid_ids.extend(orcid.fetch_article_orcidids(doi, pmid, row.title, top_n_orcid=top_n_orcid))
     article_orcid_ids = sorted(set(article_orcid_ids))
     author_ids = [
         {

@@ -111,11 +111,7 @@ def set_article(
             articles.append(article)
             orcid_ids = extract_authors(article_element)
             for orcidid in orcid_ids:
-                author_wrote_article.append(
-                    AuthorWroteArticle(
-                        author_uid=orcidid, article_uid=europmc_id
-                    )
-                )
+                author_wrote_article.append(AuthorWroteArticle(author_uid=orcidid, article_uid=europmc_id))
     else:  # If serp doesnt work, create Article class manualy from csv
         article_id = generate_unique_id(title)
         article = Article(
@@ -204,9 +200,7 @@ def main(args):
     europmc_xml_map = load_europmc_xmls(europmc_article_xmls_path)
 
     # Process all BBP articles before fetching the citations
-    for _, bbp_publication_row in tqdm(
-        bbp_publications.iterrows(), desc="Processing BBP articles"
-    ):
+    for _, bbp_publication_row in tqdm(bbp_publications.iterrows(), desc="Processing BBP articles"):
         doi = bbp_publication_row["DOI"]
         if pd.isna(doi) or not is_valid_doi(doi):
             doi = None
@@ -247,12 +241,8 @@ def main(args):
         )
 
     # Process all articles citing BBP
-    for europmc_id, europmc_source in tqdm(
-        zip(europmc_ids, europmc_sources), desc="Processing citations"
-    ):
-        citations, citing_articles = get_citations(
-            europmc_id, europmc_source, europmc_xml_map
-        )
+    for europmc_id, europmc_source in tqdm(zip(europmc_ids, europmc_sources), desc="Processing citations"):
+        citations, citing_articles = get_citations(europmc_id, europmc_source, europmc_xml_map)
         for citing_article in citing_articles:
             if citing_article.uid not in uids:
                 uids.append(citing_article.uid)
@@ -267,40 +257,24 @@ def main(args):
 
     # Replace illegal characters in the specified columns
     for col in columns_to_clean:
-        df[col] = (
-            df[col].astype(str).str.replace('"', "")
-        )  # Remove double quotes
-        df[col] = (
-            df[col].astype(str).str.replace("'", "")
-        )  # Remove single quotes
+        df[col] = df[col].astype(str).str.replace('"', "")  # Remove double quotes
+        df[col] = df[col].astype(str).str.replace("'", "")  # Remove single quotes
 
     df.sort_values(by="uid", inplace=True)
     df.to_csv(os.path.join(args.output_dir, "articles.csv"), index=False)
 
-    article_cites_article_dict = [
-        citation.model_dump() for citation in article_cites_article
-    ]
+    article_cites_article_dict = [citation.model_dump() for citation in article_cites_article]
     df_cites = pd.DataFrame(article_cites_article_dict)
-    df_cites.sort_values(
-        by=["article_uid_source", "article_uid_target"], inplace=True
-    )
-    df_cites.to_csv(
-        os.path.join(args.output_dir, "article_cites_article.csv"), index=False
-    )
-    author_wrote_article = [
-        wrote.model_dump() for wrote in author_wrote_article
-    ]
+    df_cites.sort_values(by=["article_uid_source", "article_uid_target"], inplace=True)
+    df_cites.to_csv(os.path.join(args.output_dir, "article_cites_article.csv"), index=False)
+    author_wrote_article = [wrote.model_dump() for wrote in author_wrote_article]
     author_wrote_article = pd.DataFrame(author_wrote_article)
-    author_wrote_article.sort_values(
-        by=["author_uid", "article_uid"], inplace=True
-    )
+    author_wrote_article.sort_values(by=["author_uid", "article_uid"], inplace=True)
 
 
 def get_parser() -> argparse.ArgumentParser:
     """Get parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "bbp_articles_path",
         type=pathlib.Path,
@@ -309,10 +283,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "bbp_articles_wip_path",
         type=pathlib.Path,
-        help=(
-            "Path the the csv file containing work in progress BBP"
-            " publications"
-        ),
+        help=("Path the the csv file containing work in progress BBP" " publications"),
     )
     parser.add_argument(
         "bbp_theses_wip_path",
@@ -327,10 +298,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "serp_jsons_path",
         type=pathlib.Path,
-        help=(
-            "Path to the directory where we save and load serp jsons for some"
-            " articles."
-        ),
+        help=("Path to the directory where we save and load serp jsons for some" " articles."),
     )
     parser.add_argument(
         "output_dir",

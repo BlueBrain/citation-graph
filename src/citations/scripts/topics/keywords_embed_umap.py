@@ -35,15 +35,11 @@ async def fetch_embeddings(text: str, model: str) -> List[float] | None:
         raise
 
 
-async def embed_keywords(
-    keywords: List[str], model: str, batch_size: int = 10
-) -> List[Dict[str, Any]]:
+async def embed_keywords(keywords: List[str], model: str, batch_size: int = 10) -> List[Dict[str, Any]]:
     """Embed keywords using OpenAI API."""
     all_embeddings = []
     tasks = [fetch_embeddings(keyword, model) for keyword in keywords]
-    for i in tqdm(
-        range(0, len(tasks), batch_size), desc="Processing keyword batches"
-    ):
+    for i in tqdm(range(0, len(tasks), batch_size), desc="Processing keyword batches"):
         batch_results = await asyncio.gather(*tasks[i : i + batch_size])
         for j, emb in enumerate(batch_results):
             if emb:
@@ -97,9 +93,7 @@ async def main(
     """Run code to embed keywords using OpenAI API and perform UMAP."""
     # Path to data directory and files
     keywords_file = os.path.join(data_dir, "updated_article_keywords.json")
-    keywords_embedded_file = os.path.join(
-        data_dir, "keywords_embedded_test.jsonl"
-    )
+    keywords_embedded_file = os.path.join(data_dir, "keywords_embedded_test.jsonl")
     keywords_umap_file = os.path.join(data_dir, "keywords_umap_test.json")
 
     # Load keywords
@@ -107,9 +101,7 @@ async def main(
         keywords_dict = json.load(f)
 
     # Extract unique keywords
-    unique_keywords = list(
-        {kw for kws in keywords_dict.values() for kw in kws}
-    )
+    unique_keywords = list({kw for kws in keywords_dict.values() for kw in kws})
     logger.info(f"Found {len(unique_keywords)} unique keywords.")
 
     # Take only the first n_keywords
@@ -121,24 +113,17 @@ async def main(
     existing_embeddings = load_existing_embeddings(keywords_embedded_file)
     # check if existing embeddings is not empty
     if existing_embeddings != {}:
-        if any(
-            item["model"] != model for item in existing_embeddings.values()
-        ):
+        if any(item["model"] != model for item in existing_embeddings.values()):
             logger.warning("Existing embeddings are for a different model.")
             existing_embeddings = {}
         else:
-            logger.info(
-                f"Loaded {len(existing_embeddings)} existing embeddings."
-            )
+            logger.info(f"Loaded {len(existing_embeddings)} existing embeddings.")
     else:
         logger.info("No existing embeddings found.")
 
     # Identify new keywords that need embedding
     new_keywords = [
-        kw
-        for kw in unique_keywords
-        if kw not in existing_embeddings
-        or existing_embeddings[kw]["model"] != model
+        kw for kw in unique_keywords if kw not in existing_embeddings or existing_embeddings[kw]["model"] != model
     ]
     logger.info(f"Found {len(new_keywords)} new keywords to embed.")
 
@@ -154,9 +139,7 @@ async def main(
                 json.dump(item, f)
                 f.write("\n")
 
-        logger.info(
-            f"All keyword embeddings saved as {keywords_embedded_file}"
-        )
+        logger.info(f"All keyword embeddings saved as {keywords_embedded_file}")
     else:
         all_embeddings = list(existing_embeddings.values())
         logger.info("No new keywords to embed.")
@@ -180,9 +163,7 @@ async def main(
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Embed keywords using OpenAI API and perform UMAP."
-    )
+    parser = argparse.ArgumentParser(description="Embed keywords using OpenAI API and perform UMAP.")
     parser.add_argument(
         "--data-dir",
         required=True,
@@ -210,6 +191,4 @@ def parse_arguments():
 
 if __name__ == "__main__":
     args = parse_arguments()
-    asyncio.run(
-        main(args.data_dir, args.model, args.batch_size, args.n_keywords)
-    )
+    asyncio.run(main(args.data_dir, args.model, args.batch_size, args.n_keywords))

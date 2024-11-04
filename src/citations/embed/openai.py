@@ -56,9 +56,7 @@ async def process_batches(session, missing_data, batch_size):
     return all_embeddings
 
 
-async def fetch_embeddings(
-    session: aiohttp.ClientSession, text: str, retry_count: int = 3
-) -> List[float] | None:
+async def fetch_embeddings(session: aiohttp.ClientSession, text: str, retry_count: int = 3) -> List[float] | None:
     """
     Fetch embeddings for a given text using OpenAI API.
 
@@ -100,10 +98,7 @@ async def fetch_embeddings(
                 logger.warning(f"Server error {response.status}, retrying...")
                 await asyncio.sleep(2**attempt)  # Exponential backoff
             else:
-                logger.error(
-                    "Failed to get embeddings:"
-                    f" {response.status} {await response.text()}"
-                )
+                logger.error("Failed to get embeddings:" f" {response.status} {await response.text()}")
                 return None
         except Exception as e:
             logger.error(f"Failed to get embeddings: {str(e)}")
@@ -136,17 +131,12 @@ def convert_article_uids_to_str(df):
             df.at[index, "article_uid"] = str(uid)
 
             # Log a warning
-            logger.warning(
-                f"Converted non-string value '{uid}' to string in"
-                " 'article_uid' column."
-            )
+            logger.warning(f"Converted non-string value '{uid}' to string in" " 'article_uid' column.")
 
     return df
 
 
-def handle_duplicates(
-    df: pd.DataFrame, option: Literal["discard", "use_first", "use_last"]
-) -> pd.DataFrame:
+def handle_duplicates(df: pd.DataFrame, option: Literal["discard", "use_first", "use_last"]) -> pd.DataFrame:
     """
     Handle duplicates in the embeddings data frame.
 
@@ -179,22 +169,16 @@ def handle_duplicates(
                 unique_embeddings[uid] = embeddings[-1]
                 logger.info(f"Using the last embedding for article_uid {uid}")
             elif option == "discard":
-                logger.info(
-                    f"Discarding duplicate embeddings for article_uid {uid}"
-                )
+                logger.info(f"Discarding duplicate embeddings for article_uid {uid}")
 
         # Update the data frame to keep only the resolved embeddings
         df = df.drop_duplicates(subset="article_uid", keep=False)
         for uid, embedding in unique_embeddings.items():
-            df = df.append(  # type: ignore
-                {"article_uid": uid, "vector": embedding}, ignore_index=True
-            )
+            df = df.append({"article_uid": uid, "vector": embedding}, ignore_index=True)  # type: ignore
     return df
 
 
-def save_embeddings_to_jsonl(
-    df_combined: pd.DataFrame, embedded_file: str, model_name: str
-):
+def save_embeddings_to_jsonl(df_combined: pd.DataFrame, embedded_file: str, model_name: str):
     """
     Save the combined dataframe with embeddings to a JSON Lines file.
 
@@ -236,9 +220,7 @@ async def main(
     data_dir: str,
     limit: int = -1,
     batch_size: int = 10,
-    duplicate_strategy: Literal[
-        "discard", "use_first", "use_last"
-    ] = "discard",
+    duplicate_strategy: Literal["discard", "use_first", "use_last"] = "discard",
 ) -> None:
     """
     Run code to embed articles using OpenAI API.
@@ -307,19 +289,15 @@ async def main(
 
     # Setup aiohttp session for async API calls
     async with aiohttp.ClientSession() as session:
-        all_embeddings = await process_batches(
-            session, missing_data, batch_size
-        )
+        all_embeddings = await process_batches(session, missing_data, batch_size)
 
     # Save new embeddings to a file
     if all_embeddings:
         new_embeddings_df = pd.DataFrame(all_embeddings)
-        df_combined = pd.concat(
-            [df_embedded, new_embeddings_df], ignore_index=True
-        ).drop_duplicates(subset="article_uid", keep="last")
-        save_embeddings_to_jsonl(
-            df_combined, embedded_file, "text-embedding-3-large"
+        df_combined = pd.concat([df_embedded, new_embeddings_df], ignore_index=True).drop_duplicates(
+            subset="article_uid", keep="last"
         )
+        save_embeddings_to_jsonl(df_combined, embedded_file, "text-embedding-3-large")
         logger.info(f"New embeddings saved as {embedded_file}")
     else:
         logger.warning("No new embeddings to save.")

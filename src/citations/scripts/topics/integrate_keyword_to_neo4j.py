@@ -16,16 +16,10 @@ load_dotenv()
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Load keyword embeddings and UMAP coordinates to Neo4j"
-    )
-    parser.add_argument(
-        "--neo4j-uri", default="bolt://localhost:7687", help="Neo4j URI"
-    )
+    parser = argparse.ArgumentParser(description="Load keyword embeddings and UMAP coordinates to Neo4j")
+    parser.add_argument("--neo4j-uri", default="bolt://localhost:7687", help="Neo4j URI")
     parser.add_argument("--neo4j-user", default="neo4j", help="Neo4j username")
-    parser.add_argument(
-        "--neo4j-password", default="password", help="Neo4j password"
-    )
+    parser.add_argument("--neo4j-password", default="password", help="Neo4j password")
     parser.add_argument(
         "--embeddings-file",
         type=str,
@@ -101,9 +95,7 @@ def update_neo4j(
             MATCH (k:Keyword {name: $keyword})
             SET k.embedding = $embedding
             """
-            execute_query_with_logging(
-                session, query, {"keyword": keyword, "embedding": embedding}
-            )
+            execute_query_with_logging(session, query, {"keyword": keyword, "embedding": embedding})
 
         for keyword, coordinates in umap_coordinates.items():
             x, y = coordinates[0], coordinates[1]
@@ -111,9 +103,7 @@ def update_neo4j(
             MATCH (k:Keyword {name: $keyword})
             SET k.umap_x = $x, k.umap_y = $y
             """
-            execute_query_with_logging(
-                session, query, {"keyword": keyword, "x": x, "y": y}
-            )
+            execute_query_with_logging(session, query, {"keyword": keyword, "x": x, "y": y})
 
         logging.info("Keyword embeddings and UMAP coordinates updated.")
 
@@ -122,9 +112,7 @@ def main():
     """Load keywords, embeddings, and UMAP coordinates to Neo4j."""
     args = parse_arguments()
 
-    driver = GraphDatabase.driver(
-        args.neo4j_uri, auth=(args.neo4j_user, args.neo4j_password)
-    )
+    driver = GraphDatabase.driver(args.neo4j_uri, auth=(args.neo4j_user, args.neo4j_password))
 
     embeddings = load_embeddings(args.embeddings_file)
     umap_coordinates = load_umap_coordinates(args.umap_file)
@@ -132,10 +120,7 @@ def main():
 
     try:
         update_neo4j(driver, embeddings, umap_coordinates, article_keywords)
-        logging.info(
-            "Keywords, embeddings, and UMAP coordinates loaded to Neo4j"
-            " successfully."
-        )
+        logging.info("Keywords, embeddings, and UMAP coordinates loaded to Neo4j" " successfully.")
     except Exception as e:
         logging.error(f"An error occurred while updating Neo4j: {str(e)}")
     finally:
