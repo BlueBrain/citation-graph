@@ -1,0 +1,3 @@
+- [Jan Krepl](https://github.com/jankrepl) @ Blue Brain Project, EPFL
+- [Kerem Kurban](https://github.com/KeremKurban) @ Blue Brain Project, EPFL
+- [Csaba Zsolnai]() @ Blue Brain Project, EPFL
