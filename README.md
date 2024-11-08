@@ -54,24 +54,11 @@ pip install -e .
 
 ### Loading the Database
 
-Alternatively, if you have an existing database dump, you can load it directly into your Neo4j instance. This is a quicker option and does not require the use of external APIs. You can use the `neo4j-admin` tool to load the database dump file, as described in the "Loading the Database" section. This method is cost-effective and efficient if you already have a pre-generated database that suits your requirements.
+In your neo4j desktop, you can create a new project, then import the neo4j.dump file by clicking ```add``` ```->``` ```File``` and once its loaded, you can click on ```...``` next to the imported file and select ```create new DBMS from dump```. 
 
+After the loading process is complete, you can ```start``` your Neo4j database.
 
-Run the following command in the terminal or command prompt:
-
-```bash
-neo4j-admin load --from=/path/to/backup/backup.dump --database=neo4j --force
-```
-
-- Replace /path/to/backup/backup.dump with the actual path to your dump file.
-- The --database=neo4j option specifies the name of the database you want to load into. Make sure you are using the correct database name.
-- The --force option is used to overwrite the existing database.
-
-After the loading process is complete, you can start your Neo4j database:
-
-```bash
-neo4j start
-```
+To use perspectives into Neo4j Bloom, you can import them from [here](src/citations/perspectives) for enhaced user experience.
 
 # Gallery 
 
