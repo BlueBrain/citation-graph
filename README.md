@@ -2,6 +2,8 @@
 
 ![3D Force Graph](images/force_3d_graph.png)
 
+This repository provides tools and visualizations for analyzing citations of research articles published by Blue Brain Project and its collaborators across its lifetime. It includes scripts for creating a database of articles and authors, fetching citation data, and performing various analyses such as node embedding, clustering and dimension reduction. The visualizations help in understanding author collaborations, keyword co-occurrences, and thematic trends over time. The repository is designed to integrate seamlessly with Neo4j for advanced graph database functionalities.
+
 ## Table of Contents
 
 [Installing the package](#installing-the-package)
