@@ -1,8 +1,8 @@
 # Citation graph
 
-## Table of Contents
-
 ![3D Force Graph](images/force_3d_graph.png)
+
+## Table of Contents
 
 [Installing the package](#installing-the-package)
 
