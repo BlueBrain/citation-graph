@@ -1,7 +1,8 @@
-# Citation graph
+# BlueBrain Citation Graph
 
-![3D Force Graph](images/force_3d_graph.png)
+<img src="images/force_3d_graph.png" alt="3D Force Graph" style="width:100%; height:100px; object-fit:cover;">
 
+## Introduction
 This repository provides tools and visualizations for analyzing citations of research articles published by Blue Brain Project and its collaborators across its lifetime. It includes scripts for creating a database of articles and authors, fetching citation data, and performing various analyses such as node embedding, clustering and dimension reduction. The visualizations help in understanding author collaborations, keyword co-occurrences, and thematic trends over time. The repository is designed to integrate seamlessly with Neo4j for advanced graph database functionalities.
 
 ## Table of Contents
@@ -55,8 +56,6 @@ Below are some visualizations generated from the citation graph data:
 *UMAP clustering using the Louvain method.*
 
 These images provide a glimpse into the complex relationships and structures within the citation graph, offering insights into the research landscape.
-
-
 
 ## Funding and Acknowledgement
 
