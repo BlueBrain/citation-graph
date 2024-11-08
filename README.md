@@ -35,22 +35,22 @@ For detailed instructions on creating the database, please refer to the [step by
 Below are some visualizations generated from the citation graph data:
 
 ![Author Works on Keyword](images/author_works_on_keyword2.png)
-*Figure 1: Visualization of author works on specific keywords.*
+*Visualization of author works on specific keywords.*
 
 ![Author Collaboration Network](images/author_works_on_keyword3.png)
-*Figure 2: A network visualization of author collaborations extracted from the citation data.*
+*A network visualization of author collaborations extracted from the citation data.*
 
 ![Keyword Co-occurrence](images/keyword_cooccurence.png)
-*Figure 3: Co-occurrence of keywords extracted from articles, highlighting thematic groupings.*
+*Co-occurrence of keywords extracted from articles, highlighting thematic groupings.*
 
 ![Top 3 Keywords Per Year (Node Weighted)](images/top_3_keywords_per_year_node_weighted.png)
-*Figure 5: Top 3 keywords per year with node weighting.*
+*Top 3 keywords per year with node weighting.*
 
 ![Top 3 Keywords Per Year (Weighted)](images/top_3_keywords_per_year_weighted.png)
-*Figure 6: Top 3 keywords per year with weighting.*
+*Top 3 keywords per year with weighting.*
 
 ![UMAP Cluster Louvain](images/umap_cluster_louvain.png)
-*Figure 8: UMAP clustering using the Louvain method.*
+*UMAP clustering using the Louvain method.*
 
 These images provide a glimpse into the complex relationships and structures within the citation graph, offering insights into the research landscape.
 
