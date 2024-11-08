@@ -2,6 +2,18 @@
 
 Below is the pipeline to generate citation graph and load it into neo4j. Please read the notes at the end first if you want to use it with AuraDB.
 
+In the main directory, run:
+```bash
+pip install .
+```
+
+or
+
+```bash
+pip install -e .
+```
+
+
 [1. Gathering articles with citation data from EuroPMC](#gathering-articles-with-citation-data-from-europmc)
 
 [2. Gathering author with affiliation data from Orcid](#gathering-author-with-affiliation-data-from-orcid)
